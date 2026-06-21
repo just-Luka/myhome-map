@@ -1,0 +1,9 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/myhomemapgea69/myhome-map/
+    - /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
+    - /usr/local/bin/php8.3 artisan migrate --force
+    - /usr/local/bin/php8.3 artisan optimize:clear
+    - /usr/local/bin/php8.3 artisan optimize
+    - chmod -R 775 storage bootstrap/cache
