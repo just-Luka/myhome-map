@@ -168,7 +168,7 @@
     <button class="fpill" id="pill-period"   onclick="toggleDrop('period')"><span data-i18n="pill_period">Period</span> <span class="arrow">▼</span></button>
     <button class="fpill" id="pill-rooms"    onclick="toggleDrop('rooms')"><span data-i18n="pill_rooms">Rooms</span> <span class="arrow">▼</span></button>
     <button class="fpill" id="pill-bedrooms" onclick="toggleDrop('bedrooms')"><span data-i18n="pill_bedrooms">Bedrooms</span> <span class="arrow">▼</span></button>
-    <button class="fpill" id="pill-building" onclick="toggleDrop('building')"><span data-i18n="pill_building">Building</span> <span class="arrow">▼</span></button>
+    <button class="fpill" id="pill-building" onclick="toggleDrop('building')" disabled style="opacity:.35;cursor:not-allowed;"><span data-i18n="pill_building">Building</span> <span class="arrow">▼</span></button>
 </div>
 
 <!-- Price dropdown -->
