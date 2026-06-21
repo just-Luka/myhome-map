@@ -3,7 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYHOME-MAP</title>
+    <title>MYHOME-MAP — Tbilisi Rent Map</title>
+
+    <!-- SEO -->
+    <meta name="description" content="Browse Tbilisi apartment rentals on an interactive map. Filter by price, rooms, and building type. Updated every 3 hours from myhome.ge.">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website">
+    <meta property="og:url"         content="https://myhome-map.ge/">
+    <meta property="og:title"       content="MYHOME-MAP — Tbilisi Rent Map">
+    <meta property="og:description" content="Browse Tbilisi apartment rentals on an interactive map. Filter by price, rooms, and building type. Updated every 3 hours from myhome.ge.">
+    <meta property="og:image"       content="https://myhome-map.ge/og-image.png">
+    <meta property="og:locale"      content="en_US">
+    <meta property="og:locale:alternate" content="ru_RU">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="MYHOME-MAP — Tbilisi Rent Map">
+    <meta name="twitter:description" content="Browse Tbilisi apartment rentals on an interactive map. Filter by price, rooms, and building type.">
+    <meta name="twitter:image"       content="https://myhome-map.ge/og-image.png">
+
+    <!-- Theme -->
+    <meta name="theme-color" content="#1a1a2e">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
