@@ -172,8 +172,12 @@ class ScrapeMyHome extends Command
 
     private function fetchDetailCoords(string $id, string $slug): array
     {
-        $url      = "https://www.myhome.ge/en/pr/{$id}" . ($slug ? "/{$slug}" : '');
-        $response = Http::withHeaders(self::HEADERS)->timeout(20)->get($url);
+        $url = "https://www.myhome.ge/en/pr/{$id}" . ($slug ? "/{$slug}" : '');
+        try {
+            $response = Http::withHeaders(self::HEADERS)->timeout(20)->get($url);
+        } catch (\Exception $e) {
+            return [null, null];
+        }
 
         if (! $response->successful()) return [null, null];
 
