@@ -77,6 +77,9 @@ class ScrapeMyHome extends Command
                     if ($updatedAt->lt($cutoff)) continue;
                     $allOld = false;
 
+                    $poster = ($l['user_type']['type'] ?? 'physical') === 'physical' ? 'owner' : 'agent';
+                    if ($poster !== 'owner') continue;
+
                     $this->processListing($l, $updatedAt, $geoCache, $delayMs);
                 }
 
