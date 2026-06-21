@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MYHOME-MAP — Tbilisi Rent Map</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
     <!-- SEO -->
     <meta name="description" content="Browse Tbilisi apartment rentals on an interactive map. Filter by price, rooms, and building type. Updated every 3 hours from myhome.ge.">
