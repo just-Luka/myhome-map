@@ -2,51 +2,63 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Listing;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
+use Symfony\Component\Process\Process;
 
 class ScrapeController extends Controller
 {
+    private const PASSWORD = 'myhomemap2024';
+
+    public function page()
+    {
+        return view('scrape');
+    }
+
+    public function auth(Request $request)
+    {
+        if ($request->input('password') !== self::PASSWORD) {
+            return back()->with('error', 'Wrong password.');
+        }
+        session(['scrape_auth' => true]);
+        return redirect()->route('scrape.page');
+    }
+
     public function run(Request $request)
     {
-        set_time_limit(300);
-
-        Artisan::call('scrape:myhome', [
-            '--pages' => 25,
-            '--delay' => 300,
-        ]);
-
-        // Return filtered listings after scraping
-        $query = Listing::whereNotNull('lat')->whereNotNull('lng');
-
-        if ($request->filled('price_min')) {
-            $query->where('price', '>=', (float) $request->price_min);
+        if (! session('scrape_auth')) {
+            abort(403);
         }
-        if ($request->filled('price_max')) {
-            $query->where('price', '<=', (float) $request->price_max);
-        }
-        if ($request->filled('districts')) {
-            $districts = array_filter(explode(',', $request->districts));
-            if (count($districts)) {
-                $query->whereIn('district_id', $districts);
+
+        $pages = max(1, min(30, (int) $request->input('pages', 30)));
+
+        return response()->stream(function () use ($pages) {
+            $send = function (string $line) {
+                echo 'data: ' . json_encode(['line' => $line]) . "\n\n";
+                ob_flush(); flush();
+            };
+
+            $send("Starting scrape — {$pages} pages...");
+
+            $process = new Process([
+                PHP_BINARY, base_path('artisan'), 'scrape:myhome', "--pages={$pages}",
+            ]);
+            $process->setTimeout(600);
+            $process->start();
+
+            foreach ($process as $type => $data) {
+                foreach (explode("\n", trim($data)) as $line) {
+                    if ($line !== '') $send(strip_tags($line));
+                }
+                if (connection_aborted()) { $process->stop(); break; }
             }
-        }
-        if ($request->filled('poster_type') && $request->poster_type !== 'all') {
-            $query->where('poster_type', $request->poster_type);
-        }
-        if ($request->filled('rent_type') && $request->rent_type !== 'all') {
-            $query->where('rent_type', $request->rent_type);
-        }
 
-        $listings = $query
-            ->orderByDesc('listed_at')
-            ->get(['listing_id', 'title', 'price', 'currency', 'rent_type', 'lat', 'lng',
-                   'address', 'area', 'rooms', 'district_name', 'poster_type', 'listed_at', 'url']);
-
-        return response()->json([
-            'scraped' => Artisan::output(),
-            'listings' => $listings,
+            $send($process->isSuccessful() ? '✓ Done!' : '✗ Failed: ' . $process->getExitCodeText());
+            echo 'data: ' . json_encode(['done' => true]) . "\n\n";
+            ob_flush(); flush();
+        }, 200, [
+            'Content-Type'      => 'text/event-stream',
+            'Cache-Control'     => 'no-cache',
+            'X-Accel-Buffering' => 'no',
         ]);
     }
 }
