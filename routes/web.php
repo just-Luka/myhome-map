@@ -5,4 +5,4 @@ use App\Http\Controllers\StreamController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ListingController::class, 'index']);
-Route::get('/api/stream', [StreamController::class, 'stream']);
+Route::middleware('throttle:60,1')->get('/api/stream', [StreamController::class, 'stream']);
