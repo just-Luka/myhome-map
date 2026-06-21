@@ -22,10 +22,7 @@ Route::post('/logout', function () {
     return redirect()->route('login');
 })->name('logout');
 
-Route::middleware(function ($request, $next) {
-    if (! session('site_auth')) return redirect()->route('login');
-    return $next($request);
-})->group(function () {
+Route::middleware(\App\Http\Middleware\SiteAuth::class)->group(function () {
     Route::get('/', [ListingController::class, 'index']);
     Route::middleware('throttle:60,1')->get('/api/stream', [StreamController::class, 'stream']);
 });
