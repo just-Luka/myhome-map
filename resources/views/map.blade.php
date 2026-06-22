@@ -422,7 +422,7 @@ function setStatus(text, live = false) {
 }
 
 function startStream() {
-    if (activeStream) { activeStream.close(); activeStream = null; }
+    if (activeStream) { activeStream.abort(); activeStream = null; }
     markers.clearLayers();
     setStatus(tr('loading'), true);
 
@@ -446,24 +446,20 @@ function startStream() {
 
     params.set('poster_type', 'owner');
 
-    let count = 0;
-    activeStream = new EventSource('/api/stream?' + params.toString());
+    const controller = new AbortController();
+    activeStream = controller;
 
-    activeStream.onmessage = (e) => {
-        const data = JSON.parse(e.data);
-        if (data.done) {
-            activeStream.close(); activeStream = null;
+    fetch('/api/stream?' + params.toString(), { signal: controller.signal })
+        .then(r => r.json())
+        .then(data => {
+            activeStream = null;
+            data.listings.forEach(l => addMarker(l));
             setStatus(tr('n_found', data.total), false);
-            return;
-        }
-        if (data.status) { setStatus(data.status, true); return; }
-        if (data.listing) { count++; addMarker(data.listing); setStatus(tr('finding', count), true); }
-    };
-
-    activeStream.onerror = () => {
-        activeStream?.close(); activeStream = null;
-        setStatus(count ? tr('n_found', count) : tr('error'), false);
-    };
+        })
+        .catch(err => {
+            if (err.name !== 'AbortError') setStatus(tr('error'), false);
+            activeStream = null;
+        });
 }
 
 function addMarker(l) {

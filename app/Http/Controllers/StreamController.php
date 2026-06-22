@@ -24,28 +24,13 @@ class StreamController extends Controller
             'poster_type' => $request->input('poster_type', 'all'),
         ];
 
-        return response()->stream(function () use ($filters) {
-            $cutoff   = Carbon::now()->subDays(self::DAYS_CUTOFF);
-            $listings = $this->queryDb($filters, $cutoff);
-            $count    = 0;
+        $cutoff   = Carbon::now()->subDays(self::DAYS_CUTOFF);
+        $listings = $this->queryDb($filters, $cutoff);
+        $formatted = $listings->map(fn ($l) => $this->formatListing($l))->values();
 
-            foreach ($listings as $listing) {
-                if (connection_aborted()) break;
-
-                echo 'data: ' . json_encode(['listing' => $this->formatListing($listing)]) . "\n\n";
-                ob_flush();
-                flush();
-                $count++;
-            }
-
-            echo 'data: ' . json_encode(['done' => true, 'total' => $count]) . "\n\n";
-            ob_flush();
-            flush();
-        }, 200, [
-            'Content-Type'      => 'text/event-stream',
-            'Cache-Control'     => 'no-cache',
-            'X-Accel-Buffering' => 'no',
-            'Connection'        => 'keep-alive',
+        return response()->json([
+            'listings' => $formatted,
+            'total'    => $formatted->count(),
         ]);
     }
 
