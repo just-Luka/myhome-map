@@ -29,4 +29,4 @@ Route::middleware(\App\Http\Middleware\SiteAuth::class)->group(function () {
 
 Route::get('/scrape', [ScrapeController::class, 'page'])->name('scrape.page');
 Route::post('/scrape/auth', [ScrapeController::class, 'auth'])->name('scrape.auth');
-Route::post('/scrape/run', [ScrapeController::class, 'run'])->name('scrape.run');
+Route::get('/scrape/run', [ScrapeController::class, 'run'])->name('scrape.run');
