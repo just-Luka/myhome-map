@@ -29,7 +29,11 @@ Route::middleware(['auth', 'throttle:60,1'])->get('/api/stream', [StreamControll
 // ── Authenticated users (saved listings + team info) ──────────────────────────
 Route::middleware('auth')->group(function () {
     Route::post('/api/save',        [SavedListingController::class, 'toggle'])->name('save.toggle');
+    Route::patch('/api/save/note',   [SavedListingController::class, 'updateNote'])->name('save.note');
+    Route::patch('/api/save/links',  [SavedListingController::class, 'updateLinks'])->name('save.links');
+    Route::patch('/api/save/update', [SavedListingController::class, 'updateEntry'])->name('save.update');
     Route::get('/api/my-saves',     [SavedListingController::class, 'mySaves'])->name('save.mine');
+    Route::get('/api/all-saves',    [SavedListingController::class, 'allSaves'])->name('save.all');
     Route::get('/api/team-saves',   [SavedListingController::class, 'teamSaves'])->name('save.team');
 });
 
@@ -78,7 +82,8 @@ Route::get('/dev/splash', function () {
     return redirect('/');
 })->middleware('auth');
 
-// ── Scrape (internal) ─────────────────────────────────────────────────────────
-Route::get('/scrape',       [ScrapeController::class, 'page'])->name('scrape.page');
-Route::post('/scrape/auth', [ScrapeController::class, 'auth'])->name('scrape.auth');
-Route::get('/scrape/run',   [ScrapeController::class, 'run'])->name('scrape.run');
+// ── Scrape (super admin only) ─────────────────────────────────────────────────
+Route::middleware(\App\Http\Middleware\SuperAdmin::class)->group(function () {
+    Route::get('/scrape',     [ScrapeController::class, 'page'])->name('scrape.page');
+    Route::get('/scrape/run', [ScrapeController::class, 'run'])->name('scrape.run');
+});

@@ -15,7 +15,7 @@ class SavedListingController extends Controller
             'my_price'         => 'nullable|numeric|min:0',
         ]);
 
-        $user    = auth()->user();
+        $user     = auth()->user();
         $existing = SavedListing::where('user_id', $user->id)
             ->where('listing_id', $request->listing_id)
             ->first();
@@ -31,17 +31,108 @@ class SavedListingController extends Controller
             'listing_id'       => $request->listing_id,
             'listing_snapshot' => $request->listing_snapshot,
             'my_price'         => $request->my_price ?: null,
+            'saved_date'       => now()->toDateString(),
         ]);
 
         return response()->json(['saved' => true]);
     }
 
+    // Today's saves only — drives the daily progress counter
     public function mySaves()
     {
+        $user  = auth()->user();
+        $today = now()->toDateString();
+        $limit = $user->organization?->save_limit ?? 20;
+
+        $saves = SavedListing::where('user_id', $user->id)
+            ->where('saved_date', $today)
+            ->get(['listing_id', 'my_price', 'listing_snapshot', 'note', 'link_myhome', 'link_ss'])
+            ->keyBy('listing_id')
+            ->map(fn ($s) => [
+                'my_price'    => $s->my_price,
+                'snapshot'    => $s->listing_snapshot,
+                'note'        => $s->note,
+                'link_myhome' => $s->link_myhome,
+                'link_ss'     => $s->link_ss,
+            ]);
+
+        return response()->json(['saves' => $saves, 'limit' => $limit]);
+    }
+
+    // All-time saves — the general archive list
+    public function allSaves()
+    {
+        $today = now()->toDateString();
+
         $saves = SavedListing::where('user_id', auth()->id())
-            ->pluck('my_price', 'listing_id');
+            ->where('saved_date', '!=', $today)
+            ->orderByDesc('saved_date')
+            ->get(['listing_id', 'my_price', 'listing_snapshot', 'note', 'link_myhome', 'link_ss', 'saved_date'])
+            ->map(fn ($s) => [
+                'listing_id'  => $s->listing_id,
+                'my_price'    => $s->my_price,
+                'snapshot'    => $s->listing_snapshot,
+                'note'        => $s->note,
+                'link_myhome' => $s->link_myhome,
+                'link_ss'     => $s->link_ss,
+                'saved_date'  => $s->saved_date,
+            ]);
 
         return response()->json($saves);
+    }
+
+    public function updateEntry(Request $request)
+    {
+        $request->validate([
+            'listing_id'  => 'required|string',
+            'my_price'    => 'nullable|numeric|min:0',
+            'note'        => 'nullable|string|max:1000',
+            'link_myhome' => 'nullable|url|max:500',
+            'link_ss'     => 'nullable|url|max:500',
+        ]);
+
+        SavedListing::where('user_id', auth()->id())
+            ->where('listing_id', $request->listing_id)
+            ->update([
+                'my_price'    => $request->my_price    ?: null,
+                'note'        => $request->note         ?: null,
+                'link_myhome' => $request->link_myhome ?: null,
+                'link_ss'     => $request->link_ss     ?: null,
+            ]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function updateLinks(Request $request)
+    {
+        $request->validate([
+            'listing_id'  => 'required|string',
+            'link_myhome' => 'nullable|url|max:500',
+            'link_ss'     => 'nullable|url|max:500',
+        ]);
+
+        SavedListing::where('user_id', auth()->id())
+            ->where('listing_id', $request->listing_id)
+            ->update([
+                'link_myhome' => $request->link_myhome ?: null,
+                'link_ss'     => $request->link_ss     ?: null,
+            ]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function updateNote(Request $request)
+    {
+        $request->validate([
+            'listing_id' => 'required|string',
+            'note'       => 'nullable|string|max:1000',
+        ]);
+
+        SavedListing::where('user_id', auth()->id())
+            ->where('listing_id', $request->listing_id)
+            ->update(['note' => $request->note ?: null]);
+
+        return response()->json(['ok' => true]);
     }
 
     public function teamSaves()

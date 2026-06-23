@@ -52,13 +52,232 @@
         #live-dot { width: 8px; height: 8px; border-radius: 50%; background: #e94560; display: none; animation: pulse 1s infinite; flex-shrink: 0; }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-        /* Saved list button */
+        /* Progress button */
         #saved-btn {
-            display: none; padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 8px;
-            background: #e94560; color: #fff; text-decoration: none; border: none;
-            white-space: nowrap; flex-shrink: 0; cursor: pointer; transition: background 0.15s;
+            display: none; align-items: center; gap: 7px; padding: 5px 10px 5px 5px;
+            font-size: 12px; font-weight: 600; border-radius: 20px;
+            background: #1a1d2e; color: #e2e8f0; border: none;
+            white-space: nowrap; flex-shrink: 0; cursor: pointer;
+            transition: background 0.15s;
         }
-        #saved-btn:hover { background: #c73652; }
+        #saved-btn:hover { background: #1e2235; }
+        #progress-ring-wrap {
+            position: relative; width: 28px; height: 28px; flex-shrink: 0;
+        }
+        #progress-ring-wrap svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+        #progress-ring-bg  { fill: none; stroke: #2d3149; stroke-width: 3; }
+        #progress-ring-arc { fill: none; stroke: #4f6ef7; stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
+        #progress-ring-arc.full { stroke: #f87171; }
+        #progress-ring-label {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            font-size: 8px; font-weight: 800; color: #e2e8f0; line-height: 1;
+        }
+
+        /* ── Saved panel ── */
+        #saved-panel {
+            position: fixed; top: 56px; right: 0; bottom: 0; width: 360px;
+            background: #1a1a2e; border-left: 1px solid #2d3149;
+            z-index: 900; display: flex; flex-direction: column;
+            transform: translateX(100%); transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+            box-shadow: -4px 0 24px rgba(0,0,0,0.4); overflow: hidden;
+        }
+        #saved-panel.open { transform: translateX(0); }
+        #saved-list { flex: 1; }
+
+        /* ── Archive modal ── */
+        #archive-modal {
+            display: none; position: fixed; inset: 0; z-index: 2500;
+            background: rgba(5,6,12,0.85); backdrop-filter: blur(6px);
+            align-items: flex-start; justify-content: center; padding: 40px 20px;
+        }
+        #archive-modal.open { display: flex; }
+        #archive-box {
+            background: #111320; border: 1px solid #2d3149; border-radius: 16px;
+            width: 100%; max-width: 860px; max-height: calc(100vh - 80px);
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+        }
+        #archive-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 18px 24px; border-bottom: 1px solid #2d3149; flex-shrink: 0;
+        }
+        #archive-header h2 { font-size: 16px; font-weight: 700; color: #e2e8f0; flex: 1; }
+        #archive-search {
+            padding: 7px 14px; background: #0f1117; border: 1px solid #3d4466;
+            border-radius: 8px; color: #e2e8f0; font-size: 13px; outline: none; width: 220px;
+        }
+        #archive-search::placeholder { color: #64748b; }
+        #archive-search:focus { border-color: #4f6ef7; }
+        #archive-close {
+            background: none; border: none; color: #64748b; font-size: 20px;
+            cursor: pointer; padding: 0 4px; transition: color 0.15s; line-height: 1;
+        }
+        #archive-close:hover { color: #e2e8f0; }
+        #archive-body { overflow-y: auto; flex: 1; }
+        #archive-body::-webkit-scrollbar { width: 4px; }
+        #archive-body::-webkit-scrollbar-thumb { background: #2d3149; border-radius: 2px; }
+        .archive-date-group { padding: 0 24px; }
+        .archive-date-label {
+            font-size: 11px; font-weight: 700; color: #e2e8f0; text-transform: uppercase;
+            letter-spacing: .07em; padding: 16px 0 8px; border-bottom: 1px solid #3d4466;
+        }
+        .archive-row {
+            display: grid; grid-template-columns: auto 1fr auto auto; gap: 12px;
+            align-items: center; padding: 10px 0; border-bottom: 1px solid #111320;
+        }
+        .archive-row-actions { display: flex; flex-direction: column; gap: 4px; }
+        .arc-btn {
+            width: 30px; height: 30px; border-radius: 7px; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: background 0.15s;
+        }
+        .arc-btn-edit   { background: #1e2235; color: #94a3b8; }
+        .arc-btn-edit:hover   { background: #2d3149; color: #e2e8f0; }
+        .arc-btn-edit.active  { background: #4f6ef7; color: #fff; }
+        .arc-btn-remove { background: #2a1a1a; color: #f87171; }
+        .arc-btn-remove:hover { background: #3b1a1a; }
+        .archive-edit-form {
+            display: none; grid-column: 1 / -1;
+            background: #0f1117; border: 1px solid #2d3149; border-radius: 10px;
+            padding: 14px; margin: 4px 0 8px; display: none;
+            gap: 10px; flex-direction: column;
+        }
+        .archive-edit-form.open { display: flex; }
+        .archive-edit-row { display: flex; gap: 8px; }
+        .archive-edit-input {
+            flex: 1; padding: 7px 10px; background: #1a1a2e; border: 1px solid #3d4466;
+            border-radius: 7px; color: #e2e8f0; font-size: 12px; outline: none;
+            font-family: inherit; transition: border-color 0.15s;
+        }
+        .archive-edit-input:focus { border-color: #4f6ef7; }
+        .archive-edit-input::placeholder { color: #64748b; }
+        .archive-edit-save {
+            padding: 7px 18px; background: #4f6ef7; color: #fff; border: none;
+            border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;
+            transition: background 0.15s; white-space: nowrap;
+        }
+        .archive-edit-save:hover { background: #3b5be0; }
+        .archive-row-title, a.archive-row-title, a.archive-row-title:visited {
+            font-size: 13px; font-weight: 600; color: #fff !important;
+            text-decoration: none !important;
+        }
+        a.archive-row-title:hover {
+            color: #7dd3fc !important;
+            text-decoration: underline !important;
+            cursor: pointer;
+        }
+        .archive-row-addr  { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+        .archive-row-price { font-size: 14px; font-weight: 800; color: #e94560; white-space: nowrap; }
+        .archive-row-owner { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+        .archive-row-links { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; width: 155px; flex-shrink: 0; }
+        .archive-row-links .archive-link-pill { width: 100%; box-sizing: border-box; justify-content: flex-start; }
+        .archive-link-pill {
+            display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px;
+            background: #1e2235; border: 1px solid #3d4466; border-radius: 6px;
+            text-decoration: none; color: #e2e8f0; font-size: 11px; font-weight: 500;
+            white-space: nowrap; transition: border-color 0.15s;
+        }
+        .archive-link-pill:hover { border-color: #4f6ef7; }
+        .archive-link-pill img { width: 14px; height: 14px; border-radius: 2px; }
+        .archive-link-empty { opacity: 0.35; cursor: default; pointer-events: none; }
+        .archive-link-id { color: #64748b; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 10px; }
+        .sp-section-header {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 14px; border-bottom: 1px solid #2d3149; flex-shrink: 0;
+        }
+        .sp-section-divider { border-top: 2px solid #2d3149; }
+        .sp-section-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .07em; }
+        .sp-section-meta { font-size: 12px; color: #4f6ef7; font-weight: 700; }
+        .sp-section-actions { display: flex; gap: 6px; margin-left: auto; }
+        .sp-section-actions .panel-btn { padding: 4px 10px; font-size: 11px; }
+        .sp-scroll {
+            flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px;
+            min-height: 0;
+        }
+        .sp-scroll::-webkit-scrollbar { width: 4px; }
+        .sp-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sp-scroll::-webkit-scrollbar-thumb { background: #2d3149; border-radius: 2px; }
+        #panel-tab {
+            position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+            width: 28px; height: 56px; background: #1a1a2e; border: 1px solid #2d3149;
+            border-right: none; border-radius: 8px 0 0 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: #94a3b8; font-size: 18px;
+            transition: color 0.15s, background 0.15s, right 0.3s cubic-bezier(.4,0,.2,1);
+            box-shadow: -4px 0 12px rgba(0,0,0,0.4); z-index: 901;
+        }
+        #panel-tab:hover { color: #e2e8f0; background: #1e2235; }
+        #panel-tab.open { right: 360px; }
+        .saved-card {
+            background: #111320; border: 1px solid #2d3149; border-radius: 10px;
+            padding: 12px 14px; position: relative;
+        }
+        .saved-card-title { font-size: 13px; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; line-height: 1.3; }
+        .saved-card-address { font-size: 11px; color: #94a3b8; margin-bottom: 8px; }
+        .saved-card-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .saved-card-price { font-size: 18px; font-weight: 800; color: #e94560; }
+        .saved-card-orig { font-size: 11px; color: #64748b; }
+        .saved-card-contact { font-size: 12px; color: #cbd5e1; margin-bottom: 8px; display: flex; flex-direction: column; gap: 3px; }
+        .saved-card-myprice { font-size: 12px; color: #86efac; font-weight: 600; }
+        .saved-card-footer { display: flex; gap: 6px; margin-top: 8px; }
+        .saved-card-link {
+            flex: 1; text-align: center; font-size: 11px; font-weight: 600; padding: 6px;
+            border-radius: 6px; background: #1e2235; color: #4f6ef7; text-decoration: none; transition: background 0.15s;
+        }
+        .saved-card-link:hover { background: #2d3149; }
+        .saved-card-remove {
+            font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 6px;
+            background: #2a1a1a; color: #f87171; border: none; cursor: pointer; transition: background 0.15s;
+        }
+        .saved-card-remove:hover { background: #3b1a1a; }
+        .saved-card-note-trigger {
+            font-size: 11px; color: #94a3b8; cursor: pointer; margin-top: 6px;
+            display: block; transition: color 0.15s;
+        }
+        .saved-card-note-trigger:hover { color: #cbd5e1; }
+        .saved-card-note-trigger.has-note { color: #e2e8f0; font-style: normal; }
+        .saved-card-note-area {
+            display: none; width: 100%; margin-top: 6px; padding: 7px 9px; font-size: 12px; line-height: 1.5;
+            background: #0f1117; border: 1px solid #3d4466; border-radius: 6px; color: #e2e8f0;
+            resize: none; outline: none; font-family: inherit; transition: border-color 0.15s;
+        }
+        .saved-card-note-area.visible { display: block; }
+        .saved-card-note-area:focus { border-color: #4f6ef7; }
+        .saved-card-note-area::placeholder { color: #64748b; }
+        .saved-card-links { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+        .saved-card-link-input {
+            width: 100%; padding: 6px 9px; font-size: 11px;
+            background: #0f1117; border: 1px solid #3d4466; border-radius: 6px;
+            color: #e2e8f0; outline: none; font-family: inherit; transition: border-color 0.15s;
+        }
+        .saved-card-link-input:focus { border-color: #4f6ef7; }
+        .saved-card-link-input::placeholder { color: #64748b; }
+        .link-pill {
+            display: none; align-items: center; gap: 7px; padding: 5px 9px;
+            background: #1e2235; border: 1px solid #3d4466; border-radius: 6px;
+            text-decoration: none; color: #e2e8f0; font-size: 12px; font-weight: 500;
+            transition: border-color 0.15s;
+        }
+        .link-pill:hover { border-color: #4f6ef7; }
+        .link-pill img { width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0; }
+        .link-pill span { flex: 1; }
+        .link-pill-clear {
+            background: none; border: none; color: #475569; font-size: 15px; line-height: 1;
+            cursor: pointer; padding: 0 2px; flex-shrink: 0; transition: color 0.15s;
+        }
+        .link-pill-clear:hover { color: #f87171; }
+        .link-pill-id {
+            margin-left: auto; font-size: 11px; color: #e2e8f0; font-weight: 600;
+            font-family: 'SFMono-Regular', Consolas, monospace; letter-spacing: .3px;
+        }
+        .saved-empty { text-align: center; padding: 48px 20px; color: #4d5780; font-size: 13px; }
+        .panel-btn {
+            flex: 1; padding: 7px; font-size: 12px; font-weight: 600; border-radius: 7px;
+            border: none; cursor: pointer; transition: all 0.15s;
+        }
+        .panel-btn-export { background: #1e3a1e; color: #86efac; }
+        .panel-btn-export:hover { background: #166534; }
+        .panel-btn-clear { background: #2a1a1a; color: #f87171; }
+        .panel-btn-clear:hover { background: #3b1a1a; }
 
         /* User menu */
         #user-menu { position: relative; flex-shrink: 0; }
@@ -170,6 +389,18 @@
             cursor: pointer; transition: background 0.2s;
         }
         .apply-btn:hover { background: #c73652; }
+
+        /* ── View switcher ── */
+        #view-switcher {
+            display: flex; border: 1.5px solid #ddd; border-radius: 22px; overflow: hidden;
+            flex-shrink: 0; margin-left: auto;
+        }
+        .vsw-btn {
+            padding: 5px 14px; font-size: 13px; font-weight: 500; border: none;
+            background: #fff; color: #888; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+        }
+        .vsw-btn:hover:not(.active) { color: #1a1a2e; }
+        .vsw-btn.active { background: #1a1a2e; color: #fff; font-weight: 600; }
 
         /* ── Map ── */
         #map { position: fixed; top: 110px; bottom: 0; left: 0; right: 0; }
@@ -350,7 +581,16 @@ window.__splashSteps = [
         <div id="live-dot"></div>
         <span id="status-text"></span>
     </div>
-    <button id="saved-btn" onclick="exportSaved()">⬇ Export (<span id="saved-count">0</span>)</button>
+    <button id="saved-btn" onclick="togglePanel()">
+        <div id="progress-ring-wrap">
+            <svg viewBox="0 0 28 28" width="28" height="28">
+                <circle id="progress-ring-bg"  cx="14" cy="14" r="11"/>
+                <circle id="progress-ring-arc" cx="14" cy="14" r="11" stroke-dasharray="69.12" stroke-dashoffset="69.12"/>
+            </svg>
+            <div id="progress-ring-label">0</div>
+        </div>
+        <span id="saved-count">0/20</span>
+    </button>
 
     @auth
     <div id="user-menu">
@@ -395,6 +635,10 @@ window.__splashSteps = [
     <button class="fpill" id="pill-rooms"    onclick="toggleDrop('rooms')"><span data-i18n="pill_rooms">Rooms</span> <span class="arrow">▼</span></button>
     <button class="fpill" id="pill-bedrooms" onclick="toggleDrop('bedrooms')"><span data-i18n="pill_bedrooms">Bedrooms</span> <span class="arrow">▼</span></button>
     <button class="fpill" id="pill-building" onclick="toggleDrop('building')" disabled style="opacity:.35;cursor:not-allowed;"><span data-i18n="pill_building">Building</span> <span class="arrow">▼</span></button>
+    <div id="view-switcher">
+        <button class="vsw-btn active" data-view="all"   onclick="setView('all')">All</button>
+        <button class="vsw-btn"        data-view="saved" onclick="setView('saved')">Saved</button>
+    </div>
 </div>
 
 <!-- Price dropdown -->
@@ -457,6 +701,36 @@ window.__splashSteps = [
 
 <div id="map"></div>
 
+<!-- Saved panel -->
+<button id="panel-tab" onclick="togglePanel()" title="Toggle panel">›</button>
+
+<div id="saved-panel">
+    <!-- Panel header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #2d3149;flex-shrink:0;background:#111320;">
+        <span style="font-size:14px;font-weight:700;color:#e2e8f0;">Saved Listings</span>
+        <button onclick="togglePanel()" style="background:none;border:none;color:#64748b;font-size:20px;cursor:pointer;line-height:1;padding:2px 4px;border-radius:6px;" onmouseover="this.style.color='#e2e8f0';this.style.background='#1e2235'" onmouseout="this.style.color='#64748b';this.style.background='none'">×</button>
+    </div>
+
+    <!-- Today section -->
+    <div class="sp-section-header">
+        <span class="sp-section-title">Today</span>
+        <span id="saved-panel-count" class="sp-section-meta">0/20</span>
+        <div class="sp-section-actions">
+            <button class="panel-btn panel-btn-export" onclick="exportSaved()">Excel</button>
+            <button class="panel-btn panel-btn-clear"  onclick="clearSaved()">Clear</button>
+        </div>
+    </div>
+    <div id="saved-list" class="sp-scroll">
+        <div class="saved-empty">No saved listings yet.<br>Click "+ Save" on any pin.</div>
+    </div>
+
+    <div class="sp-section-header sp-section-divider" style="flex-shrink:0">
+        <button class="panel-btn panel-btn-export" onclick="openArchive()" style="flex:1;padding:8px">
+            View All Listings <span id="archive-count" style="opacity:.7"></span>
+        </button>
+    </div>
+</div>
+
 @guest
 <div id="auth-overlay">
     <div id="auth-box">
@@ -466,6 +740,32 @@ window.__splashSteps = [
     </div>
 </div>
 @endguest
+
+<!-- Archive modal -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);backdrop-filter:blur(2px);align-items:center;justify-content:center;">
+    <div style="background:#1a1d2e;border:1px solid #2d3149;border-radius:14px;padding:28px 32px;min-width:300px;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.6);text-align:center;">
+        <div style="width:44px;height:44px;margin:0 auto 16px;background:#2a1a1a;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </div>
+        <div id="confirm-title" style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:6px;">Remove listing?</div>
+        <div id="confirm-desc"  style="font-size:13px;color:#94a3b8;margin-bottom:24px;line-height:1.5;"></div>
+        <div style="display:flex;gap:10px;justify-content:center;">
+            <button id="confirm-cancel" style="flex:1;padding:9px 0;border-radius:8px;border:1px solid #3d4466;background:transparent;color:#94a3b8;font-size:13px;font-weight:500;cursor:pointer;" onmouseover="this.style.borderColor='#4f6ef7';this.style.color='#e2e8f0'" onmouseout="this.style.borderColor='#3d4466';this.style.color='#94a3b8'">Cancel</button>
+            <button id="confirm-ok"     style="flex:1;padding:9px 0;border-radius:8px;border:none;background:#dc2626;color:#fff;font-size:13px;font-weight:600;cursor:pointer;" onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">Remove</button>
+        </div>
+    </div>
+</div>
+
+<div id="archive-modal">
+    <div id="archive-box">
+        <div id="archive-header">
+            <h2>All Listings</h2>
+            <input id="archive-search" type="search" placeholder="Search title, address, owner…" oninput="filterArchive(this.value)">
+            <button id="archive-close" onclick="closeArchive()">×</button>
+        </div>
+        <div id="archive-body"></div>
+    </div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
@@ -757,6 +1057,7 @@ function startStream() {
             activeStream = null;
             data.listings.forEach(l => addMarker(l));
             setStatus(tr('n_found', data.total), false);
+            if (mySaves.size) renderSavedPanel();
         })
         .catch(err => {
             if (err.name !== 'AbortError') setStatus(tr('error'), false);
@@ -766,6 +1067,9 @@ function startStream() {
 
 function addMarker(l) {
     allListings.set(String(l.id), l);
+    // Back-fill listing data for saves that were loaded from DB without a snapshot
+    const save = mySaves.get(String(l.id));
+    if (save && !save.listing) { save.listing = l; }
 
     const marker = L.marker([l.lat, l.lng]);
     const price  = l.price ? `$${Number(l.price).toLocaleString()}` : 'N/A';
@@ -811,7 +1115,7 @@ function addMarker(l) {
                     value="${alreadySaved ? (savedEntry?.myPrice || '') : ''}" min="0" step="50">
                 <button class="popup-save-btn ${alreadySaved ? 'saved' : ''}"
                     id="save-btn-${lid}"
-                    onclick="toggleSave(${JSON.stringify(l)})">
+                    onclick="toggleSave('${lid}')">
                     ${alreadySaved ? '✓ Saved' : '+ Save'}
                 </button>
             </div>
@@ -833,43 +1137,552 @@ const mySaves   = new Map();
 // listing_id → employee name; populated on load (team saves)
 const teamSaves = new Map();
 
+let panelOpen      = false;
+let saveLimit      = 20;
+const archiveSaves = [];
+
+function togglePanel() {
+    panelOpen = !panelOpen;
+    document.getElementById('saved-panel').classList.toggle('open', panelOpen);
+    const tab = document.getElementById('panel-tab');
+    tab.classList.toggle('open', panelOpen);
+    tab.textContent = panelOpen ? '›' : '‹';
+}
+
+
 function updateSavedBtn() {
+    const count      = mySaves.size;
+    const circumference = 2 * Math.PI * 11; // r=11 → ~69.12
+    const pct        = saveLimit > 0 ? Math.min(count / saveLimit, 1) : 0;
+    const offset     = circumference * (1 - (count > 0 ? pct : 0));
+
+    document.getElementById('saved-count').textContent = count + '/' + saveLimit;
+    document.getElementById('saved-btn').style.display = 'flex';
+    document.getElementById('progress-ring-label').textContent = count;
+    const arc = document.getElementById('progress-ring-arc');
+    arc.style.strokeDashoffset = offset;
+    arc.classList.toggle('full', count >= saveLimit);
+
+    renderSavedPanel();
+}
+
+function renderSavedPanel() {
+    const list  = document.getElementById('saved-list');
+    const label = document.getElementById('saved-panel-count');
+    if (!list) return;
+
     const count = mySaves.size;
-    document.getElementById('saved-count').textContent = count;
-    document.getElementById('saved-btn').style.display = count ? 'block' : 'none';
+    if (label) label.textContent = count + '/' + saveLimit;
+    const archiveCount = document.getElementById('archive-count');
+    if (archiveCount) archiveCount.textContent = archiveSaves.length ? '(' + archiveSaves.length + ')' : '';
+
+    if (!count) {
+        list.innerHTML = '<div class="saved-empty">No saved listings yet.<br>Click "+ Save" on any pin.</div>';
+        return;
+    }
+
+    list.innerHTML = '';
+    [...mySaves.entries()].reverse().forEach(([id, entry]) => {
+        const l = entry.listing || allListings.get(id);
+        const card = document.createElement('div');
+        card.className = 'saved-card';
+        card.id = 'card-' + id;
+
+        const priceFmt = formatPrice(l?.price, entry.myPrice);
+        const contact = l?.owner_name ? `
+            <div class="saved-card-contact"><span>👤 ${l.owner_name}</span></div>` : '';
+
+        const noteText = entry.note || '';
+        card.innerHTML = `
+            <div class="saved-card-title">${l?.title || 'Listing #' + id}</div>
+            ${l?.address ? `<div class="saved-card-address">📍 ${l.address}</div>` : ''}
+            <div class="saved-card-row">
+                <div class="saved-card-price">${priceFmt}</div>
+                <div class="saved-card-orig">${l?.rent_type || ''}</div>
+            </div>
+            ${contact}
+            <span class="saved-card-note-trigger ${noteText ? 'has-note' : ''}" id="note-trigger-${id}">${noteText || '+ Add note…'}</span>
+            <textarea class="saved-card-note-area" id="note-area-${id}" rows="2"></textarea>
+            <div class="saved-card-links">
+                <div id="link-wrap-myhome-${id}">
+                    <input class="saved-card-link-input" type="url" placeholder="myhome.ge…" value="${entry.linkMyhome || ''}">
+                    <a class="link-pill" href="#" target="_blank" rel="noopener">
+                        <img src="https://www.google.com/s2/favicons?domain=myhome.ge&sz=32" alt="">
+                        <span>myhome.ge</span>
+                        <span class="link-pill-id"></span>
+                        <button class="link-pill-clear" type="button">×</button>
+                    </a>
+                </div>
+                <div id="link-wrap-ss-${id}">
+                    <input class="saved-card-link-input" type="url" placeholder="ss.ge…" value="${entry.linkSs || ''}">
+                    <a class="link-pill" href="#" target="_blank" rel="noopener">
+                        <img src="https://www.google.com/s2/favicons?domain=ss.ge&sz=32" alt="">
+                        <span>ss.ge</span>
+                        <span class="link-pill-id"></span>
+                        <button class="link-pill-clear" type="button">×</button>
+                    </a>
+                </div>
+            </div>
+            <div class="saved-card-footer">
+                ${l?.url ? `<a class="saved-card-link" href="${l.url}" target="_blank" rel="noopener">View →</a>` : ''}
+                <button class="saved-card-remove" onclick="removeSave('${id}')">Remove</button>
+            </div>
+        `;
+        list.appendChild(card);
+
+        const trigger = card.querySelector('.saved-card-note-trigger');
+        const area    = card.querySelector('.saved-card-note-area');
+        area.value = noteText;
+
+        trigger.addEventListener('click', () => {
+            trigger.style.display = 'none';
+            area.classList.add('visible');
+            area.focus();
+        });
+
+        area.addEventListener('blur', async () => {
+            area.classList.remove('visible');
+            trigger.style.display = '';
+            const val = area.value.trim();
+            trigger.textContent = val || '+ Add note…';
+            trigger.classList.toggle('has-note', !!val);
+            await saveNote(id, val);
+        });
+
+        initLinkField(id, 'myhome', entry.linkMyhome || '');
+        initLinkField(id, 'ss',     entry.linkSs     || '');
+    });
+}
+
+function initLinkField(id, type, initialUrl) {
+    const wrap    = document.getElementById('link-wrap-' + type + '-' + id);
+    const input   = wrap.querySelector('input');
+    const pill    = wrap.querySelector('.link-pill');
+    const clearBtn = wrap.querySelector('.link-pill-clear');
+
+    function showPill(url) {
+        pill.href = url;
+        input.style.display = 'none';
+        pill.style.display  = 'flex';
+        const idEl = pill.querySelector('.link-pill-id');
+        if (idEl) {
+            const match = type === 'myhome'
+                ? url.match(/\/pr\/(\d+)/)
+                : url.match(/-(\d+)\/?$/);
+            idEl.textContent = match ? '#' + match[1] : '';
+        }
+    }
+    function showInput() {
+        pill.style.display  = 'none';
+        input.style.display = '';
+    }
+
+    if (initialUrl) showPill(initialUrl);
+
+    input.addEventListener('blur', async () => {
+        const url = input.value.trim();
+        if (url) showPill(url);
+        const entry = mySaves.get(id);
+        const myhome = type === 'myhome' ? url : (entry?.linkMyhome || '');
+        const ss     = type === 'ss'     ? url : (entry?.linkSs     || '');
+        await saveLinks(id, myhome, ss);
+    });
+
+    clearBtn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        input.value = '';
+        showInput();
+        const entry = mySaves.get(id);
+        const myhome = type === 'myhome' ? '' : (entry?.linkMyhome || '');
+        const ss     = type === 'ss'     ? '' : (entry?.linkSs     || '');
+        saveLinks(id, myhome, ss);
+    });
+}
+
+// ── Archive lazy-loading state ────────────────────────────────────────────────
+let archiveAllItems   = [];
+let archiveOffset     = 0;
+let archiveLastDate   = null;
+let archiveGroup      = null;
+let archiveObserver   = null;
+let archiveSearchMode = false;
+const ARCHIVE_PAGE    = 30;
+
+function formatPrice(origRaw, myRaw) {
+    const orig = Number(origRaw);
+    const my   = Number(myRaw);
+    const origFmt = origRaw ? `$${orig.toLocaleString()}` : 'N/A';
+    if (!myRaw) return origFmt;
+    const pct  = orig ? Math.round((my - orig) / orig * 100) : null;
+    const pctHtml = pct !== null
+        ? ` <span style="font-size:10px;font-weight:600;color:${pct <= 0 ? '#86efac' : '#f87171'}">(${pct > 0 ? '+' : ''}${pct}%)</span>`
+        : '';
+    return `${origFmt} <span style="color:#64748b;font-size:12px;font-weight:400">→</span> <span style="color:#86efac">$${my.toLocaleString()}</span>${pctHtml}`;
+}
+
+function buildArchiveBody(items) {
+    archiveAllItems   = items;
+    archiveOffset     = 0;
+    archiveLastDate   = null;
+    archiveGroup      = null;
+    archiveSearchMode = false;
+
+    const body = document.getElementById('archive-body');
+    body.innerHTML = '';
+
+    if (!items.length) {
+        body.innerHTML = '<div class="saved-empty" style="padding:48px 24px">No archived listings yet.</div>';
+        return;
+    }
+
+    renderMoreArchive();
+}
+
+function renderMoreArchive() {
+    if (archiveSearchMode) return;
+
+    const body = document.getElementById('archive-body');
+    const sentinel = document.getElementById('archive-sentinel');
+    if (sentinel) sentinel.remove();
+    if (archiveObserver) { archiveObserver.disconnect(); archiveObserver = null; }
+
+    const chunk = archiveAllItems.slice(archiveOffset, archiveOffset + ARCHIVE_PAGE);
+    archiveOffset += chunk.length;
+    chunk.forEach(entry => appendArchiveRow(entry, body));
+
+    if (archiveOffset < archiveAllItems.length) {
+        const s = document.createElement('div');
+        s.id = 'archive-sentinel';
+        s.style.height = '1px';
+        body.appendChild(s);
+        archiveObserver = new IntersectionObserver(([e]) => {
+            if (e.isIntersecting) renderMoreArchive();
+        }, { root: body });
+        archiveObserver.observe(s);
+    }
+}
+
+function appendArchiveRow(entry, body) {
+    if (entry.saved_date !== archiveLastDate) {
+        archiveLastDate = entry.saved_date;
+        archiveGroup = document.createElement('div');
+        archiveGroup.className = 'archive-date-group';
+        const label = document.createElement('div');
+        label.className = 'archive-date-label';
+        label.textContent = entry.saved_date;
+        archiveGroup.appendChild(label);
+        body.appendChild(archiveGroup);
+    }
+
+    const l = entry.snapshot;
+    const price = formatPrice(l?.price, entry.my_price);
+
+    const myhomeUrl = entry.link_myhome || '';
+    const ssUrl     = entry.link_ss || '';
+    const myhomeId  = (myhomeUrl.match(/\/pr\/(\d+)/) || [])[1] || '';
+    const ssId      = (ssUrl.match(/-(\d+)\/?$/) || [])[1] || '';
+
+    const myhomePill = myhomeUrl
+        ? `<a class="archive-link-pill" href="${myhomeUrl}" target="_blank" rel="noopener">
+            <img src="https://www.google.com/s2/favicons?domain=myhome.ge&sz=32" alt="">
+            <span>myhome.ge</span>
+            ${myhomeId ? `<span class="archive-link-id">#${myhomeId}</span>` : ''}
+           </a>`
+        : `<span class="archive-link-pill archive-link-empty">
+            <img src="https://www.google.com/s2/favicons?domain=myhome.ge&sz=32" alt="" style="opacity:.3">
+            <span>myhome.ge</span>
+           </span>`;
+    const ssPill = ssUrl
+        ? `<a class="archive-link-pill" href="${ssUrl}" target="_blank" rel="noopener">
+            <img src="https://www.google.com/s2/favicons?domain=ss.ge&sz=32" alt="">
+            <span>ss.ge</span>
+            ${ssId ? `<span class="archive-link-id">#${ssId}</span>` : ''}
+           </a>`
+        : `<span class="archive-link-pill archive-link-empty">
+            <img src="https://www.google.com/s2/favicons?domain=ss.ge&sz=32" alt="" style="opacity:.3">
+            <span>ss.ge</span>
+           </span>`;
+
+    const row = document.createElement('div');
+    row.className = 'archive-row';
+    const viewUrl = l?.url || myhomeUrl || ssUrl;
+    row.dataset.id = entry.listing_id;
+    const eid = entry.listing_id;
+    row.innerHTML = `
+        <div class="archive-row-actions">
+            <button class="arc-btn arc-btn-edit" id="arc-edit-btn-${eid}" onclick="toggleArchiveEdit('${eid}')" title="Edit">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="arc-btn arc-btn-remove" onclick="removeArchiveItem('${eid}')" title="Remove">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+        </div>
+        <div>
+            ${viewUrl
+                ? `<a class="archive-row-title" href="${viewUrl}" target="_blank" rel="noopener">${l?.title || 'Listing #' + eid}</a>`
+                : `<div class="archive-row-title">${l?.title || 'Listing #' + eid}</div>`}
+            ${l?.address ? `<div class="archive-row-addr">📍 ${l.address}</div>` : ''}
+            ${l?.owner_name ? `<div class="archive-row-owner">👤 ${l.owner_name}</div>` : ''}
+            <div id="arc-note-display-${eid}" style="font-size:11px;color:#94a3b8;margin-top:4px;font-style:italic">${entry.note ? '💬 ' + entry.note : ''}</div>
+        </div>
+        <div id="arc-price-display-${eid}" class="archive-row-price">${price}</div>
+        <div class="archive-row-links">${myhomePill}${ssPill}</div>
+        <div class="archive-edit-form" id="arc-edit-${eid}">
+            <div class="archive-edit-row">
+                <input class="archive-edit-input" id="arc-price-${eid}"  type="number" placeholder="My price $"  value="${entry.my_price || ''}" min="0" step="50">
+                <input class="archive-edit-input" id="arc-note-${eid}"   type="text"   placeholder="Comment…"    value="${(entry.note || '').replace(/"/g, '&quot;')}">
+            </div>
+            <div class="archive-edit-row">
+                <input class="archive-edit-input" id="arc-myhome-${eid}" type="url"    placeholder="myhome.ge…"  value="${myhomeUrl || ''}">
+                <input class="archive-edit-input" id="arc-ss-${eid}"     type="url"    placeholder="ss.ge…"      value="${ssUrl || ''}">
+            </div>
+            <div class="archive-edit-row">
+                <button class="archive-edit-save" onclick="saveArchiveEdit('${eid}')">Save</button>
+            </div>
+        </div>
+    `;
+    archiveGroup.appendChild(row);
+}
+
+function toggleArchiveEdit(id) {
+    const form = document.getElementById('arc-edit-' + id);
+    const btn  = document.getElementById('arc-edit-btn-' + id);
+    const open = form.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) form.querySelector('input').focus();
+}
+
+async function saveArchiveEdit(id) {
+    const myPrice   = document.getElementById('arc-price-' + id)?.value  || null;
+    const note      = document.getElementById('arc-note-' + id)?.value   || null;
+    const linkMyhome = document.getElementById('arc-myhome-' + id)?.value || null;
+    const linkSs    = document.getElementById('arc-ss-' + id)?.value     || null;
+
+    await fetch('/api/save/update', {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        body:    JSON.stringify({ listing_id: id, my_price: myPrice, note, link_myhome: linkMyhome, link_ss: linkSs }),
+    });
+
+    // Update displayed note
+    const noteDisplay = document.getElementById('arc-note-display-' + id);
+    if (noteDisplay) noteDisplay.textContent = note ? '💬 ' + note : '';
+
+    // Update displayed price
+    const priceDisplay = document.getElementById('arc-price-display-' + id);
+    if (priceDisplay) {
+        const origEntry = archiveSaves.find(e => e.listing_id === id);
+        const origEntry2 = archiveAllItems.find(e => e.listing_id === id);
+        priceDisplay.innerHTML = formatPrice(origEntry2?.snapshot?.price, myPrice);
+    }
+
+    // Close form
+    toggleArchiveEdit(id);
+}
+
+function filterArchive(q) {
+    const term = q.toLowerCase().trim();
+    const body = document.getElementById('archive-body');
+
+    if (!term) {
+        // Back to paginated view
+        archiveOffset     = 0;
+        archiveLastDate   = null;
+        archiveGroup      = null;
+        archiveSearchMode = false;
+        body.innerHTML    = '';
+        renderMoreArchive();
+        return;
+    }
+
+    archiveSearchMode = true;
+    if (archiveObserver) { archiveObserver.disconnect(); archiveObserver = null; }
+
+    const matches = archiveAllItems.filter(e => {
+        const l = e.snapshot;
+        const myhomeId = (e.link_myhome?.match(/\/pr\/(\d+)/) || [])[1] || '';
+        const ssId     = (e.link_ss?.match(/-(\d+)\/?$/) || [])[1] || '';
+        return [l?.title, l?.address, l?.owner_name, myhomeId, ssId]
+            .filter(Boolean).join(' ').toLowerCase().includes(term);
+    });
+
+    body.innerHTML  = '';
+    archiveLastDate = null;
+    archiveGroup    = null;
+
+    if (!matches.length) {
+        body.innerHTML = '<div class="saved-empty" style="padding:48px 24px">No results.</div>';
+        return;
+    }
+    matches.forEach(entry => appendArchiveRow(entry, body));
+}
+
+function showConfirm(title, desc) {
+    return new Promise(resolve => {
+        const modal  = document.getElementById('confirm-modal');
+        const okBtn  = document.getElementById('confirm-ok');
+        const cancel = document.getElementById('confirm-cancel');
+        document.getElementById('confirm-title').textContent = title;
+        document.getElementById('confirm-desc').textContent  = desc;
+        modal.style.display = 'flex';
+        const finish = result => {
+            modal.style.display = 'none';
+            okBtn.removeEventListener('click', onOk);
+            cancel.removeEventListener('click', onCancel);
+            resolve(result);
+        };
+        const onOk     = () => finish(true);
+        const onCancel = () => finish(false);
+        okBtn.addEventListener('click', onOk);
+        cancel.addEventListener('click', onCancel);
+        modal.addEventListener('click', e => { if (e.target === modal) finish(false); }, { once: true });
+    });
+}
+
+async function removeArchiveItem(id) {
+    const ok = await showConfirm('Remove listing?', 'This will permanently remove it from your saved list.');
+    if (!ok) return;
+    const entry   = mySaves.get(id);
+    const listing = entry?.listing || allListings.get(id) || { id };
+    await fetch('/api/save', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        body:    JSON.stringify({ listing_id: id, listing_snapshot: listing, my_price: null }),
+    });
+    // Remove from today's map or archive array
+    mySaves.delete(id);
+    const ai = archiveSaves.findIndex(e => e.listing_id === id);
+    if (ai !== -1) archiveSaves.splice(ai, 1);
+    const ai2 = archiveAllItems.findIndex(e => e.listing_id === id);
+    if (ai2 !== -1) archiveAllItems.splice(ai2, 1);
+    // Remove the row from DOM
+    const row = document.querySelector(`#archive-body .archive-row[data-id="${id}"]`);
+    if (row) {
+        const group = row.closest('.archive-date-group');
+        row.remove();
+        if (group && !group.querySelector('.archive-row')) group.remove();
+    }
+    updateSavedBtn();
+    // Also update popup save button if visible
+    const btn = document.getElementById('save-btn-' + id);
+    if (btn) { btn.textContent = '+ Save'; btn.classList.remove('saved'); }
+}
+
+function openArchive() {
+    const today = new Date().toISOString().slice(0, 10);
+    const todayEntries = [...mySaves.entries()].reverse().map(([id, entry]) => ({
+        listing_id:  id,
+        snapshot:    entry.listing || allListings.get(id) || null,
+        saved_date:  today,
+        my_price:    entry.myPrice    || null,
+        note:        entry.note       || '',
+        link_myhome: entry.linkMyhome || '',
+        link_ss:     entry.linkSs     || '',
+    }));
+    buildArchiveBody([...todayEntries, ...archiveSaves]);
+    document.getElementById('archive-search').value = '';
+    document.getElementById('archive-modal').classList.add('open');
+}
+
+function closeArchive() {
+    document.getElementById('archive-modal').classList.remove('open');
+}
+
+document.getElementById('archive-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('archive-modal')) closeArchive();
+});
+
+async function saveLinks(id, myhome, ss) {
+    const entry = mySaves.get(id);
+    if (entry) { entry.linkMyhome = myhome; entry.linkSs = ss; }
+    await fetch('/api/save/links', {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        body:    JSON.stringify({ listing_id: id, link_myhome: myhome || null, link_ss: ss || null }),
+    });
+}
+
+async function saveNote(id, text) {
+    const entry = mySaves.get(id);
+    if (entry) entry.note = text;
+    await fetch('/api/save/note', {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        body:    JSON.stringify({ listing_id: id, note: text }),
+    });
+}
+
+async function removeSave(id) {
+    const ok = await showConfirm('Remove listing?', 'This will remove it from your saved list for today.');
+    if (!ok) return;
+    const entry   = mySaves.get(id);
+    const listing = entry?.listing || allListings.get(id) || { id };
+    const res  = await fetch('/api/save', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        body:    JSON.stringify({ listing_id: id, listing_snapshot: listing, my_price: null }),
+    });
+    const data = await res.json();
+    if (!data.saved) {
+        mySaves.delete(id);
+        const btn = document.getElementById('save-btn-' + id);
+        if (btn) { btn.textContent = '+ Save'; btn.classList.remove('saved'); }
+        updateSavedBtn();
+    }
+}
+
+async function clearSaved() {
+    if (!mySaves.size) return;
+    const ids = [...mySaves.keys()];
+    await Promise.all(ids.map(id => removeSave(id)));
 }
 
 async function loadSaves() {
     if (!isAuthed) return;
     try {
-        const [mine, team] = await Promise.all([
+        const [mineRes, allRes, team] = await Promise.all([
             fetch('/api/my-saves').then(r => r.json()),
+            fetch('/api/all-saves').then(r => r.json()),
             fetch('/api/team-saves').then(r => r.json()),
         ]);
-        Object.entries(mine).forEach(([id, price]) => mySaves.set(id, { myPrice: price }));
+        saveLimit = mineRes.limit ?? 20;
+        const mine = mineRes.saves ?? mineRes;
+        Object.entries(mine).forEach(([id, entry]) => mySaves.set(id, {
+            myPrice:    entry.my_price,
+            listing:    entry.snapshot || null,
+            note:       entry.note       || '',
+            linkMyhome: entry.link_myhome || '',
+            linkSs:     entry.link_ss     || '',
+        }));
+        archiveSaves.length = 0;
+        allRes.forEach(e => archiveSaves.push(e));
         Object.entries(team).forEach(([id, name]) => teamSaves.set(id, name));
         updateSavedBtn();
     } catch (e) {}
 }
 
-async function toggleSave(l) {
+async function toggleSave(lid) {
     if (!isAuthed) { window.location = '/login'; return; }
 
-    const myPrice = document.getElementById('my-price-' + l.id)?.value || '';
-    const btn     = document.getElementById('save-btn-' + l.id);
+    lid = String(lid);
+    const l       = allListings.get(lid);
+    const myPrice = document.getElementById('my-price-' + lid)?.value || '';
+    const btn     = document.getElementById('save-btn-' + lid);
 
     const res  = await fetch('/api/save', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-        body:    JSON.stringify({ listing_id: l.id, listing_snapshot: l, my_price: myPrice || null }),
+        body:    JSON.stringify({ listing_id: lid, listing_snapshot: l || { id: lid }, my_price: myPrice || null }),
     });
     const data = await res.json();
 
     if (data.saved) {
-        mySaves.set(l.id, { myPrice });
+        mySaves.set(lid, { myPrice, listing: l });
         if (btn) { btn.textContent = '✓ Saved'; btn.classList.add('saved'); }
+        if (!panelOpen) togglePanel();
     } else {
-        mySaves.delete(l.id);
+        mySaves.delete(lid);
         if (btn) { btn.textContent = '+ Save'; btn.classList.remove('saved'); }
     }
     updateSavedBtn();
@@ -878,27 +1691,56 @@ async function toggleSave(l) {
 function exportSaved() {
     if (!mySaves.size) return;
 
-    const rows = [['ID', 'Title', 'Address', 'Owner', 'Phone', 'Original Price', 'My Price', 'Rent Type', 'Rooms', 'Bedrooms', 'Area', 'District', 'URL']];
+    const headers = ['ID', 'Title', 'Address', 'Owner', 'Phone', 'Original Price', 'My Price', 'Diff %', 'Rent Type', 'Rooms', 'Bedrooms', 'Area', 'District', 'Note', 'myhome.ge', 'ss.ge', 'URL'];
+    const dataRows = [];
 
     mySaves.forEach((entry, id) => {
-        // Find the listing data from markers (stored on the marker object)
         const l = allListings.get(id);
         if (!l) return;
-        rows.push([
+        const orig = Number(l.price) || 0;
+        const my   = Number(entry.myPrice) || 0;
+        const pct  = orig && my ? Math.round((my - orig) / orig * 100) : '';
+        dataRows.push([
             l.id, l.title, l.address, l.owner_name ?? '', l.phone ?? '',
-            l.price, entry.myPrice ?? '', l.rent_type, l.rooms ?? '',
-            l.bedrooms ?? '', l.area ?? '', l.district ?? '', l.url,
+            l.price ?? '', entry.myPrice ?? '', pct,
+            l.rent_type ?? '', l.rooms ?? '', l.bedrooms ?? '', l.area ?? '', l.district ?? '',
+            entry.note ?? '', entry.linkMyhome ?? '', entry.linkSs ?? '', l.url ?? '',
         ]);
     });
 
-    const csv = '﻿' + rows.map(r =>
-        r.map(v => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(',')
-    ).join('\r\n');
+    const esc = v => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const th  = headers.map(h => `<th>${esc(h)}</th>`).join('');
+    const trs = dataRows.map(r => `<tr>${r.map(v => `<td>${esc(v)}</td>`).join('')}</tr>`).join('');
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Worksheet ss:Name="Listings">
+  <Table><Row>${th}</Row>${trs}</Table>
+ </Worksheet>
+</Workbook>`;
 
+    const blob = new Blob([xml], { type: 'application/vnd.ms-excel;charset=utf-8' });
     const a    = document.createElement('a');
-    a.href     = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-    a.download = 'my-listings-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'my-listings-' + new Date().toISOString().slice(0, 10) + '.xls';
     a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+// ── View switcher ─────────────────────────────────────────────────────────────
+
+function setView(val) {
+    document.querySelectorAll('.vsw-btn').forEach(b => b.classList.toggle('active', b.dataset.view === val));
+    if (val === 'all') {
+        startStream();
+    } else {
+        markers.clearLayers();
+        allListings.forEach(l => {
+            if (mySaves.has(String(l.id))) addMarker(l);
+        });
+        setStatus(mySaves.size + ' saved', false);
+    }
 }
 
 // ── User menu ─────────────────────────────────────────────────────────────────

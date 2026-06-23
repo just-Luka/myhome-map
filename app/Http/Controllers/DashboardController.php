@@ -62,9 +62,11 @@ class DashboardController extends Controller
 
     public function updateSettings(Request $request)
     {
-        auth()->user()->organization->update([
-            'show_team_saves' => $request->boolean('show_team_saves'),
-        ]);
+        $data = ['show_team_saves' => $request->boolean('show_team_saves')];
+        if ($request->filled('save_limit')) {
+            $data['save_limit'] = max(1, min(200, (int) $request->input('save_limit')));
+        }
+        auth()->user()->organization->update($data);
 
         return back()->with('success', 'Settings saved.');
     }

@@ -423,6 +423,18 @@
                             <input type="checkbox" name="show_team_saves" value="1"
                                 {{ $org->show_team_saves ? 'checked' : '' }} onchange="this.form.submit()">
                         </div>
+                        <div class="toggle-row" style="margin-top:14px">
+                            <div>
+                                <span>Daily save limit per agent</span>
+                                <small>Max listings an agent can save per day</small>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <input type="number" name="save_limit" value="{{ $org->save_limit ?? 20 }}"
+                                    min="1" max="200"
+                                    style="width:70px;padding:6px 10px;border-radius:8px;border:1px solid var(--card-border);background:var(--body-bg);color:var(--body-text);font-size:14px;text-align:center">
+                                <button type="submit" style="padding:6px 14px;border-radius:8px;border:none;background:#4f6ef7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Save</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
 

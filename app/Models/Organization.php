@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Organization extends Model
 {
-    protected $fillable = ['name', 'logo', 'user_limit', 'show_team_saves'];
+    protected $fillable = ['name', 'logo', 'user_limit', 'show_team_saves', 'save_limit'];
 
     protected $casts = ['show_team_saves' => 'boolean'];
 
