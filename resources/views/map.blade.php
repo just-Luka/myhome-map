@@ -38,6 +38,132 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
 
+        /* ── Theme variables ── */
+        :root {
+            --bg:        #1a1a2e;
+            --bg-card:   #111320;
+            --bg-input:  #0f1117;
+            --bg-hover:  #1e2235;
+            --border:    #2d3149;
+            --border2:   #3d4466;
+            --text:      #e2e8f0;
+            --muted:     #94a3b8;
+            --dim:       #64748b;
+        }
+        [data-theme="light"] {
+            --bg:        #f0f4f8;
+            --bg-card:   #ffffff;
+            --bg-input:  #f8fafc;
+            --bg-hover:  #e2e8f0;
+            --border:    #dde3eb;
+            --border2:   #c8d0db;
+            --text:      #1a202c;
+            --muted:     #4a5568;
+            --dim:       #94a3b8;
+        }
+
+        /* ── Light theme overrides ── */
+        [data-theme="light"] #header { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+        [data-theme="light"] #header h1 { color: #1a202c; }
+        [data-theme="light"] #status-bar { color: #718096; }
+
+        [data-theme="light"] #saved-btn { background: #e8edf3; color: #1a202c; }
+        [data-theme="light"] #saved-btn:hover { background: var(--bg-hover); }
+        [data-theme="light"] #progress-ring-bg { stroke: #dde3eb; }
+        [data-theme="light"] #progress-ring-label { color: #1a202c; }
+        [data-theme="light"] #saved-count { color: #4a5568; }
+
+        [data-theme="light"] #filter-bar { background: #fff; border-bottom: 1px solid #e8edf3; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+        [data-theme="light"] .fpill { background: #f0f4f8; color: #1a202c; border: 1.5px solid #dde3eb; }
+        [data-theme="light"] .fpill:hover, [data-theme="light"] .fpill.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+        [data-theme="light"] .fdrop { background: #fff; border: 1px solid #dde3eb; box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        [data-theme="light"] .fdrop-label { color: #4a5568; }
+        [data-theme="light"] .chip { background: #f0f4f8; color: #1a202c; border-color: #dde3eb; }
+        [data-theme="light"] .chip.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+        [data-theme="light"] .range-row input[type=range]::-webkit-slider-runnable-track { background: #dde3eb; }
+        [data-theme="light"] .apply-btn { background: #e94560; }
+
+        [data-theme="light"] #view-switcher { background: #e8edf3; }
+        [data-theme="light"] .vsw-btn { color: #4a5568; }
+        [data-theme="light"] .vsw-btn.active { background: #1a1a2e; color: #fff; }
+
+        [data-theme="light"] #panel-tab { background: #fff; border-color: #dde3eb; color: #4a5568; box-shadow: -4px 0 12px rgba(0,0,0,.1); }
+        [data-theme="light"] #panel-tab:hover { background: #f0f4f8; color: #1a202c; }
+
+        [data-theme="light"] #saved-panel { background: #f8fafc; border-left: 1px solid #dde3eb; box-shadow: -4px 0 24px rgba(0,0,0,.08); }
+        [data-theme="light"] #saved-panel > div:first-child { background: #fff !important; border-bottom-color: #dde3eb !important; }
+        [data-theme="light"] #saved-panel > div:first-child span { color: #1a202c !important; }
+        [data-theme="light"] .sp-section-header { border-bottom-color: #dde3eb; }
+        [data-theme="light"] .sp-section-title { color: #4a5568; }
+        [data-theme="light"] .sp-section-meta { color: #4f6ef7; }
+        [data-theme="light"] .sp-section-divider { border-top-color: #dde3eb; }
+        [data-theme="light"] .saved-card { background: #fff; border-color: #dde3eb; }
+        [data-theme="light"] .saved-card:hover { border-color: #4f6ef7; }
+        [data-theme="light"] .saved-card-title { color: #1a202c; }
+        [data-theme="light"] .saved-card-price { color: #c0392b; }
+        [data-theme="light"] .saved-card-myprice { color: #166534; }
+        [data-theme="light"] .saved-card-addr, [data-theme="light"] .saved-card-contact { color: #4a5568; }
+        [data-theme="light"] .link-pill { background: #f0f4f8; border-color: #dde3eb; color: #1a202c; }
+        [data-theme="light"] .link-pill-clear { color: #94a3b8; }
+        [data-theme="light"] .link-pill-id { color: #4a5568; }
+        [data-theme="light"] .saved-card-link-input { background: #f8fafc; border-color: #dde3eb; color: #1a202c; }
+        [data-theme="light"] .saved-card-link-input::placeholder { color: #94a3b8; }
+        [data-theme="light"] .saved-card-remove { background: #fee2e2; color: #dc2626; }
+        [data-theme="light"] .saved-card-remove:hover { background: #fecaca; }
+        [data-theme="light"] .saved-card-link { background: #e8edf3; color: #4f6ef7; }
+        [data-theme="light"] .saved-card-link:hover { background: #dde3eb; }
+        [data-theme="light"] .note-trigger { color: #718096; }
+        [data-theme="light"] .saved-card-note-trigger.has-note { color: #1a202c; }
+        [data-theme="light"] .saved-card-note-area { background: #f8fafc; border-color: #dde3eb; color: #1a202c; }
+        [data-theme="light"] .archive-row-price { color: #c0392b; }
+        [data-theme="light"] .panel-btn-export { background: #dcfce7; color: #166534; }
+        [data-theme="light"] .panel-btn-export:hover { background: #bbf7d0; }
+        [data-theme="light"] .panel-btn-clear { background: #fee2e2; color: #991b1b; }
+        [data-theme="light"] .panel-btn-clear:hover { background: #fecaca; }
+        [data-theme="light"] .saved-empty { color: #94a3b8; }
+
+        [data-theme="light"] #archive-modal { background: rgba(100,116,139,.4); }
+        [data-theme="light"] #archive-box { background: #fff; border-color: #dde3eb; }
+        [data-theme="light"] #archive-header { border-bottom-color: #dde3eb; }
+        [data-theme="light"] #archive-header h2 { color: #1a202c; }
+        [data-theme="light"] #archive-search { background: #f8fafc; border-color: #dde3eb; color: #1a202c; }
+        [data-theme="light"] #archive-search::placeholder { color: #94a3b8; }
+        [data-theme="light"] #archive-close { color: #4a5568; }
+        [data-theme="light"] .archive-date-label { color: #1a202c; border-bottom-color: #dde3eb; }
+        [data-theme="light"] .archive-date-group { background: #fff; }
+        [data-theme="light"] .archive-row { border-bottom-color: #f0f4f8; }
+        [data-theme="light"] .archive-row:hover { background: #f8fafc; }
+        [data-theme="light"] a.archive-row-title, [data-theme="light"] a.archive-row-title:visited { color: #1a202c !important; }
+        [data-theme="light"] a.archive-row-title:hover { color: #4f6ef7 !important; }
+        [data-theme="light"] .archive-row-addr, [data-theme="light"] .archive-row-owner { color: #718096; }
+        [data-theme="light"] .archive-link-pill { background: #f0f4f8; border-color: #dde3eb; color: #1a202c; }
+        [data-theme="light"] .archive-link-pill:hover { border-color: #4f6ef7; }
+        [data-theme="light"] .archive-link-id { color: #94a3b8; }
+        [data-theme="light"] .archive-edit-form { background: #f8fafc; border-top-color: #dde3eb; }
+        [data-theme="light"] .archive-edit-input { background: #fff; border-color: #dde3eb; color: #1a202c; }
+        [data-theme="light"] .arc-btn-edit { background: #e8edf3; color: #4a5568; }
+        [data-theme="light"] .arc-btn-edit:hover { background: #dde3eb; color: #1a202c; }
+        [data-theme="light"] .arc-btn-remove { background: #fee2e2; color: #dc2626; }
+        [data-theme="light"] .arc-btn-remove:hover { background: #fecaca; }
+
+        [data-theme="light"] #user-trigger { color: #1a202c; }
+        [data-theme="light"] #user-avatar { background: #e94560; }
+        [data-theme="light"] #user-dropdown { background: #fff; border-color: #dde3eb; box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        [data-theme="light"] #user-dropdown a, [data-theme="light"] #user-dropdown button { color: #1a202c; }
+        [data-theme="light"] #user-dropdown a:hover, [data-theme="light"] #user-dropdown button:hover { background: #f0f4f8; }
+        [data-theme="light"] #user-info strong { color: #1a202c; }
+        [data-theme="light"] #user-info span { color: #4a5568; }
+        [data-theme="light"] #lang-switcher { border-color: rgba(0,0,0,.15); }
+        [data-theme="light"] .lang-btn { color: #4a5568; }
+        [data-theme="light"] .lang-btn.active { background: #1a1a2e; color: #fff; }
+        [data-theme="light"] .lang-btn:not(.active):hover { background: #e8edf3; }
+        [data-theme="light"] #theme-toggle { border-color: rgba(0,0,0,.15) !important; color: #1a202c; }
+        [data-theme="light"] .popup-link,
+        [data-theme="light"] .leaflet-container a.popup-link { background: #1a1a2e; color: #fff !important; }
+        [data-theme="light"] .popup-link:hover,
+        [data-theme="light"] .leaflet-container a.popup-link:hover { background: #e94560; color: #fff !important; }
+        [data-theme="light"] .plan-pro { background: #dcfce7; color: #166534; }
+
         /* ── Header ── */
         #header {
             position: fixed; top: 0; left: 0; right: 0; height: 56px;
@@ -493,7 +619,7 @@
         .popup-save-btn:hover { background: #c73652; }
         .popup-save-btn.saved { background: #2e7d32; }
         .popup-link {
-            display: block; background: #1a1a2e; color: #fff; text-align: center;
+            display: block; background: #1a1a2e; color: #fff !important; text-align: center;
             padding: 10px; text-decoration: none; font-size: 13px; font-weight: 600;
             border-radius: 8px; transition: background 0.2s;
         }
@@ -626,6 +752,10 @@ window.__splashSteps = [
         <button class="lang-btn" onclick="setLang('ru')">RU</button>
         <button class="lang-btn" onclick="setLang('ka')">KA</button>
     </div>
+
+    <button id="theme-toggle" onclick="toggleTheme()" title="Toggle theme"
+        style="background:none;border:1.5px solid rgba(255,255,255,.2);border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .15s,background .15s;color:inherit;"
+        onmouseover="this.style.borderColor='rgba(255,255,255,.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,.2)'">🌙</button>
 </div>
 
 <!-- Filter bar -->
@@ -1132,6 +1262,27 @@ function addMarker(l) {
 const isAuthed   = !!document.querySelector('meta[name="user-authed"]');
 const csrfToken  = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
+// ── Theme ─────────────────────────────────────────────────────────────────────
+(function () {
+    const saved = localStorage.getItem('theme') || 'dark';
+    applyTheme(saved);
+})();
+function applyTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    const btn = document.getElementById('theme-toggle');
+    if (btn) {
+        btn.textContent = theme === 'light' ? '🌙' : '☀️';
+        btn.style.borderColor = theme === 'light' ? 'rgba(0,0,0,.15)' : 'rgba(255,255,255,.2)';
+        btn.onmouseover = () => btn.style.borderColor = theme === 'light' ? 'rgba(0,0,0,.35)' : 'rgba(255,255,255,.5)';
+        btn.onmouseout  = () => btn.style.borderColor = theme === 'light' ? 'rgba(0,0,0,.15)' : 'rgba(255,255,255,.2)';
+    }
+}
+function toggleTheme() {
+    const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    localStorage.setItem('theme', next);
+    applyTheme(next);
+}
+
 // listing_id → {myPrice} for current user; populated on load
 const mySaves   = new Map();
 // listing_id → employee name; populated on load (team saves)
@@ -1310,15 +1461,19 @@ let archiveSearchMode = false;
 const ARCHIVE_PAGE    = 30;
 
 function formatPrice(origRaw, myRaw) {
-    const orig = Number(origRaw);
-    const my   = Number(myRaw);
-    const origFmt = origRaw ? `$${orig.toLocaleString()}` : 'N/A';
+    const light    = document.documentElement.dataset.theme === 'light';
+    const orig     = Number(origRaw);
+    const my       = Number(myRaw);
+    const origFmt  = origRaw ? `$${orig.toLocaleString()}` : 'N/A';
     if (!myRaw) return origFmt;
-    const pct  = orig ? Math.round((my - orig) / orig * 100) : null;
-    const pctHtml = pct !== null
-        ? ` <span style="font-size:10px;font-weight:600;color:${pct <= 0 ? '#86efac' : '#f87171'}">(${pct > 0 ? '+' : ''}${pct}%)</span>`
+    const myColor  = light ? '#166534' : '#86efac';
+    const upColor  = light ? '#b91c1c' : '#f87171';
+    const downColor= light ? '#166534' : '#86efac';
+    const pct      = orig ? Math.round((my - orig) / orig * 100) : null;
+    const pctHtml  = pct !== null
+        ? ` <span style="font-size:10px;font-weight:600;color:${pct <= 0 ? downColor : upColor}">(${pct > 0 ? '+' : ''}${pct}%)</span>`
         : '';
-    return `${origFmt} <span style="color:#64748b;font-size:12px;font-weight:400">→</span> <span style="color:#86efac">$${my.toLocaleString()}</span>${pctHtml}`;
+    return `${origFmt} <span style="color:#64748b;font-size:12px;font-weight:400">→</span> <span style="color:${myColor}">$${my.toLocaleString()}</span>${pctHtml}`;
 }
 
 function buildArchiveBody(items) {
