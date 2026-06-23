@@ -886,6 +886,17 @@ window.__splashSteps = [
     </div>
 </div>
 
+<div id="iframe-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);flex-direction:column;align-items:center;justify-content:center;padding:20px;">
+    <div style="width:100%;max-width:1100px;height:90vh;background:#fff;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.6);">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:#1a1a2e;flex-shrink:0;">
+            <span id="iframe-url-label" style="flex:1;font-size:12px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+            <a id="iframe-open-tab" href="#" target="_blank" rel="noopener" style="font-size:12px;color:#7dd3fc;white-space:nowrap;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#7dd3fc'">↗ Open in tab</a>
+            <button onclick="closeIframeModal()" style="background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer;line-height:1;padding:0 4px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">×</button>
+        </div>
+        <iframe id="iframe-content" src="" style="flex:1;border:none;width:100%;"></iframe>
+    </div>
+</div>
+
 <div id="archive-modal">
     <div id="archive-box">
         <div id="archive-header">
@@ -1249,7 +1260,7 @@ function addMarker(l) {
                     ${alreadySaved ? '✓ Saved' : '+ Save'}
                 </button>
             </div>
-            <a class="popup-link" href="${l.url}" target="_blank" rel="noopener">${tr('view')}</a>
+            <a class="popup-link" href="#" onclick="openIframeModal('${l.url}');return false;">${tr('view')}</a>
         </div>
     `, { maxWidth: 310 });
 
@@ -1723,6 +1734,20 @@ async function removeArchiveItem(id) {
     const btn = document.getElementById('save-btn-' + id);
     if (btn) { btn.textContent = '+ Save'; btn.classList.remove('saved'); }
 }
+
+function openIframeModal(url) {
+    document.getElementById('iframe-content').src = url;
+    document.getElementById('iframe-url-label').textContent = url;
+    document.getElementById('iframe-open-tab').href = url;
+    document.getElementById('iframe-modal').style.display = 'flex';
+}
+function closeIframeModal() {
+    document.getElementById('iframe-modal').style.display = 'none';
+    document.getElementById('iframe-content').src = '';
+}
+document.getElementById('iframe-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('iframe-modal')) closeIframeModal();
+});
 
 function openArchive() {
     const today = new Date().toISOString().slice(0, 10);
