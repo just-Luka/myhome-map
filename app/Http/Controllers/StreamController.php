@@ -78,6 +78,8 @@ class StreamController extends Controller
             'rooms'       => $listing->rooms,
             'district'    => $listing->district_name,
             'poster_type' => $listing->poster_type,
+            'owner_name'  => $listing->owner_name,
+            'phone'       => $listing->phone,
             'updated_at'  => $listing->listed_at?->diffForHumans(),
             'url'         => $listing->url,
         ];

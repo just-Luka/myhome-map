@@ -102,7 +102,7 @@ class ScrapeMyHome extends Command
         $slug   = $l['href_lang']['en'] ?? ($l['dynamic_slug'] ?? '');
         $poster = ($l['user_type']['type'] ?? 'physical') === 'physical' ? 'owner' : 'agent';
 
-        [$lat, $lng, $geocoded] = $this->resolveCoords($l, $slug, $geoCache);
+        [$lat, $lng, $geocoded, $ownerName, $phone] = $this->resolveDetail($l, $slug, $geoCache);
 
         if (! $lat || ! $lng) {
             $this->skipped++;
@@ -123,8 +123,10 @@ class ScrapeMyHome extends Command
             'rent_type'     => ($l['deal_type_id'] ?? 2) === 7 ? 'daily' : 'monthly',
             'district_id'   => $l['district_id'] ?? null,
             'district_name' => $l['district_name'] ?? null,
-            'newly_built'   => false, // updated from detail page if available
+            'newly_built'   => false,
             'poster_type'   => $poster,
+            'owner_name'    => $ownerName,
+            'phone'         => $phone,
             'listed_at'     => $updatedAt,
             'url'           => "https://www.myhome.ge/en/pr/{$id}" . ($slug ? "/{$slug}" : ''),
         ];
@@ -140,55 +142,59 @@ class ScrapeMyHome extends Command
         }
     }
 
-    // ── Coordinates ───────────────────────────────────────────────────────
+    // ── Coordinates + contact ─────────────────────────────────────────────
 
-    private function resolveCoords(array $l, string $slug, array &$geoCache): array
+    // Returns [lat, lng, geocoded, owner_name, phone]
+    private function resolveDetail(array $l, string $slug, array &$geoCache): array
     {
-        // 1. Embedded in list page (myhome.ge swaps lat/lng)
+        $detail = $this->fetchDetailData((string) $l['id'], $slug);
+
+        // Coords: prefer detail page (exact), fall back to list page (swapped lat/lng)
+        if ($detail['lat'] !== null) {
+            return [$detail['lat'], $detail['lng'], false, $detail['owner_name'], $detail['phone']];
+        }
+
         if (! empty($l['lat']) && ! empty($l['lng'])) {
-            return [(float) $l['lng'], (float) $l['lat'], false];
+            return [(float) $l['lng'], (float) $l['lat'], false, $detail['owner_name'], $detail['phone']];
         }
 
-        // 2. Detail page — exact street-level, never cached (unique per listing)
-        $coords = $this->fetchDetailCoords((string) $l['id'], $slug);
-        if ($coords[0] !== null) {
-            return [$coords[0], $coords[1], false];
-        }
-
-        // 3. Nominatim — neighbourhood-level, cached per area
+        // Nominatim — neighbourhood-level, cached per area
         $cacheKey = ($l['urban_name'] ?? '') . '|' . ($l['district_name'] ?? '');
         if (isset($geoCache[$cacheKey])) {
-            return $geoCache[$cacheKey];
+            [$lat, $lng, $geo] = $geoCache[$cacheKey];
+            return [$lat, $lng, $geo, $detail['owner_name'], $detail['phone']];
         }
 
         $coords = $this->geocode($l['address'] ?? null, $l['urban_name'] ?? null, $l['district_name'] ?? null);
         if ($coords[0] !== null) {
-            $result = [$coords[0], $coords[1], true];
-            $geoCache[$cacheKey] = $result;
-            return $result;
+            $geoCache[$cacheKey] = [$coords[0], $coords[1], true];
+            return [$coords[0], $coords[1], true, $detail['owner_name'], $detail['phone']];
         }
 
-        // 4. District centre as last resort
+        // District centre as last resort
         $fallback = $this->districtFallback($l['district_name'] ?? null);
-        return [$fallback[0], $fallback[1] ?? null, false];
+        return [$fallback[0], $fallback[1] ?? null, false, $detail['owner_name'], $detail['phone']];
     }
 
-    private function fetchDetailCoords(string $id, string $slug): array
+    // Returns ['lat', 'lng', 'owner_name', 'phone'] from the detail page __NEXT_DATA__
+    private function fetchDetailData(string $id, string $slug): array
     {
+        $null = ['lat' => null, 'lng' => null, 'owner_name' => null, 'phone' => null];
+
         $url = "https://www.myhome.ge/en/pr/{$id}" . ($slug ? "/{$slug}" : '');
         try {
             $response = Http::withHeaders(self::HEADERS)->timeout(20)->get($url);
         } catch (\Exception $e) {
-            return [null, null];
+            return $null;
         }
 
-        if (! $response->successful()) return [null, null];
+        if (! $response->successful()) return $null;
 
         $body = $response->body();
         unset($response);
 
         if (! preg_match('/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s', $body, $m)) {
-            return [null, null];
+            return $null;
         }
 
         unset($body);
@@ -196,17 +202,34 @@ class ScrapeMyHome extends Command
         unset($m);
 
         foreach ($data['props']['pageProps']['dehydratedState']['queries'] ?? [] as $q) {
-            if (in_array('details', $q['queryKey'] ?? [])) {
-                $stmt = $q['state']['data']['data']['statement'] ?? null;
-                unset($data);
-                if ($stmt && ! empty($stmt['lat']) && ! empty($stmt['lng'])) {
-                    return [(float) $stmt['lng'], (float) $stmt['lat']];
-                }
-                return [null, null];
+            if (! in_array('details', $q['queryKey'] ?? [])) continue;
+
+            $stmt = $q['state']['data']['data']['statement'] ?? null;
+            unset($data);
+
+            if (! $stmt) return $null;
+
+            $lat = $lng = null;
+            if (! empty($stmt['lat']) && ! empty($stmt['lng'])) {
+                $lat = (float) $stmt['lng']; // myhome.ge swaps lat/lng
+                $lng = (float) $stmt['lat'];
             }
+
+            // Owner name — try multiple known locations in the payload
+            $user      = $stmt['user'] ?? $stmt['author'] ?? [];
+            $firstName = $user['first_name'] ?? $user['name'] ?? null;
+            $lastName  = $user['last_name'] ?? null;
+            $ownerName = trim(implode(' ', array_filter([$firstName, $lastName]))) ?: null;
+
+            // Phone — myhome.ge stores an array of numbers
+            $phones = $user['mobile_numbers'] ?? $user['phones'] ?? $user['mobile'] ?? [];
+            if (is_string($phones)) $phones = [$phones];
+            $phone = ! empty($phones) ? implode(', ', array_filter((array) $phones)) : null;
+
+            return ['lat' => $lat, 'lng' => $lng, 'owner_name' => $ownerName, 'phone' => $phone];
         }
 
-        return [null, null];
+        return $null;
     }
 
     private function geocode(?string $address, ?string $urban, ?string $district): array

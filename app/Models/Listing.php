@@ -23,6 +23,8 @@ class Listing extends Model
         'district_id',
         'district_name',
         'poster_type',
+        'owner_name',
+        'phone',
         'listed_at',
         'url',
     ];

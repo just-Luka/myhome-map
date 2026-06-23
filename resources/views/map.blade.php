@@ -27,6 +27,10 @@
 
     <!-- Theme -->
     <meta name="theme-color" content="#1a1a2e">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @auth
+    <meta name="user-authed" content="1">
+    @endauth
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
@@ -43,10 +47,53 @@
         }
         #header h1 { color: #fff; font-size: 18px; font-weight: 700; }
         #header h1 span { color: #e94560; }
+        #org-logo { max-height: 32px; max-width: 140px; object-fit: contain; }
         #status-bar { color: #aaa; font-size: 13px; margin-left: auto; display: flex; align-items: center; gap: 8px; }
         #live-dot { width: 8px; height: 8px; border-radius: 50%; background: #e94560; display: none; animation: pulse 1s infinite; flex-shrink: 0; }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
+        /* Saved list button */
+        #saved-btn {
+            display: none; padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 8px;
+            background: #e94560; color: #fff; text-decoration: none; border: none;
+            white-space: nowrap; flex-shrink: 0; cursor: pointer; transition: background 0.15s;
+        }
+        #saved-btn:hover { background: #c73652; }
+
+        /* User menu */
+        #user-menu { position: relative; flex-shrink: 0; }
+        #user-trigger {
+            display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08);
+            border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px;
+            padding: 5px 10px; cursor: pointer; color: #fff; font-size: 13px;
+            transition: background 0.15s;
+        }
+        #user-trigger:hover { background: rgba(255,255,255,0.14); }
+        #user-avatar {
+            width: 24px; height: 24px; border-radius: 50%; background: #e94560;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; flex-shrink: 0; color: #fff;
+        }
+        #user-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+        #user-dropdown {
+            display: none; position: absolute; top: calc(100% + 8px); right: 0;
+            background: #1a1d27; border: 1px solid #2d3149; border-radius: 12px;
+            padding: 8px; min-width: 200px; z-index: 2000;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+        #user-dropdown.open { display: block; }
+        #user-info { padding: 10px 10px 12px; border-bottom: 1px solid #2d3149; margin-bottom: 6px; }
+        #user-info strong { display: block; font-size: 14px; color: #e2e8f0; margin-bottom: 2px; }
+        #user-info span { display: block; font-size: 12px; color: #64748b; }
+        .user-plan { display: inline-block; margin-top: 6px; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .plan-pro { background: #1e3a1e; color: #86efac; }
+        .plan-free { background: #1e2235; color: #7dd3fc; }
+        #user-dropdown a, #user-dropdown button[type=submit] {
+            display: block; width: 100%; text-align: left; padding: 9px 12px;
+            font-size: 13px; color: #e2e8f0; text-decoration: none; border-radius: 8px;
+            background: none; border: none; cursor: pointer; transition: background 0.15s;
+        }
+        #user-dropdown a:hover, #user-dropdown button[type=submit]:hover { background: rgba(255,255,255,0.07); }
         /* Language switcher */
         #lang-switcher { display: flex; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
         .lang-btn {
@@ -127,6 +174,63 @@
         /* ── Map ── */
         #map { position: fixed; top: 110px; bottom: 0; left: 0; right: 0; }
 
+        /* ── Welcome splash ── */
+        #welcome-splash {
+            position: fixed; inset: 0; z-index: 3000;
+            background: #0b0d18;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        #welcome-splash.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
+        .splash-inner { text-align: center; max-width: 520px; padding: 48px 40px; }
+        .splash-logo { font-size: 36px; font-weight: 800; letter-spacing: -1px; color: #fff; margin-bottom: 8px; }
+        .splash-logo span { color: #e94560; }
+        .splash-org-logo { max-height: 72px; max-width: 260px; object-fit: contain; margin-bottom: 28px; display: block; margin-left: auto; margin-right: auto; }
+        .splash-greeting { font-size: 17px; color: #64748b; margin-bottom: 36px; }
+        .splash-greeting strong { color: #e2e8f0; }
+        .splash-title { font-size: 48px; font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 14px; }
+        .splash-sub { font-size: 16px; color: #64748b; margin-bottom: 48px; line-height: 1.7; }
+        .splash-btn {
+            display: inline-block; background: #e94560; color: #fff; border: none;
+            border-radius: 12px; padding: 16px 48px; font-size: 16px; font-weight: 700;
+            cursor: pointer; letter-spacing: .3px; transition: background 0.15s, transform 0.1s;
+        }
+        .splash-btn:hover { background: #c73652; transform: translateY(-1px); }
+        .splash-btn:disabled { background: #2d3149; color: #4d5780; cursor: not-allowed; transform: none; }
+        .splash-divider { width: 56px; height: 3px; background: #e94560; border-radius: 2px; margin: 0 auto 32px; }
+        .splash-progress-wrap {
+            width: 100%; height: 4px; background: #1e2235; border-radius: 4px;
+            margin-bottom: 14px; overflow: hidden;
+        }
+        .splash-progress-bar {
+            height: 100%; width: 0%; background: linear-gradient(90deg, #e94560, #f97316);
+            border-radius: 4px; transition: none;
+        }
+        .splash-progress-label { font-size: 12px; color: #4d5780; margin-bottom: 32px; letter-spacing: .3px; min-height: 18px; }
+        @keyframes splashIn { from { opacity:0; transform: translateY(28px); } to { opacity:1; transform: translateY(0); } }
+        .splash-inner { animation: splashIn 0.55s ease both; }
+
+        /* ── Auth overlay ── */
+        #auth-overlay {
+            position: fixed; inset: 0; z-index: 2000;
+            background: rgba(10, 11, 18, 0.82); backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+        }
+        #auth-box {
+            background: #1a1d27; border: 1px solid #2d3149; border-radius: 16px;
+            padding: 40px 48px; text-align: center;
+        }
+        .auth-logo { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+        .auth-logo span { color: #e94560; }
+        #auth-box p { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+        #auth-box a {
+            display: inline-block; background: #4f6ef7; color: #fff; text-decoration: none;
+            padding: 10px 28px; border-radius: 8px; font-size: 14px; font-weight: 600;
+            transition: background 0.15s;
+        }
+        #auth-box a:hover { background: #3b5be0; }
+
         /* ── Popup ── */
         .leaflet-popup-content-wrapper { border-radius: 14px; padding: 0; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
         .leaflet-popup-content { margin: 0; width: 290px !important; }
@@ -141,6 +245,22 @@
         .popup-chip { background: #f5f5f5; color: #555; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; }
         .popup-price { font-size: 20px; font-weight: 800; color: #e94560; margin-bottom: 14px; }
         .popup-price .period { font-size: 13px; font-weight: 400; color: #999; }
+        .popup-contact { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+        .popup-contact-row { font-size: 12px; color: #555; display: flex; align-items: center; gap: 6px; }
+        .popup-contact-row strong { color: #1a1a2e; }
+        .popup-save-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .popup-save-row input {
+            flex: 1; border: 1.5px solid #e0e0e0; border-radius: 8px;
+            padding: 8px 10px; font-size: 13px; color: #1a1a2e; outline: none;
+        }
+        .popup-save-row input:focus { border-color: #e94560; }
+        .popup-save-btn {
+            padding: 8px 14px; background: #e94560; color: #fff; border: none;
+            border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+            white-space: nowrap; transition: background 0.2s; flex-shrink: 0;
+        }
+        .popup-save-btn:hover { background: #c73652; }
+        .popup-save-btn.saved { background: #2e7d32; }
         .popup-link {
             display: block; background: #1a1a2e; color: #fff; text-align: center;
             padding: 10px; text-decoration: none; font-size: 13px; font-weight: 600;
@@ -151,15 +271,120 @@
 </head>
 <body>
 
+@if(session('welcome_splash'))
+@php
+    $splash = session('welcome_splash');
+    $sl = $splash['lang'] ?? 'en';
+    $st = [
+        'en' => [
+            'welcome'  => 'Welcome,',
+            'youre_in' => "You're in.",
+            'joined'   => 'You\'ve joined',
+            'explore'  => 'Start exploring listings on the map.',
+            'init'     => 'Initializing map…',
+            'loading'  => 'Loading listings…',
+            'placing'  => 'Placing pins on map…',
+            'fetching' => 'Fetching team data…',
+            'district' => 'Filtering by district…',
+            'almost'   => 'Almost ready…',
+            'ready'    => 'Ready!',
+            'open'     => 'Open the Map',
+        ],
+        'ka' => [
+            'welcome'  => 'მოგესალმებით,',
+            'youre_in' => 'მოგესალმებით!',
+            'joined'   => 'თქვენ შეუერთდით',
+            'explore'  => 'დაიწყეთ განცხადებების მოძებნა',
+            'init'     => 'რუკის ინიციალიზაცია…',
+            'loading'  => 'განცხადებები იტვირთება…',
+            'placing'  => 'ნიშნები რუკაზე იდება…',
+            'fetching' => 'გუნდის მონაცემები იტვირთება…',
+            'district' => 'რაიონების ფილტრაცია…',
+            'almost'   => 'თითქმის მზადაა…',
+            'ready'    => 'მზადაა!',
+            'open'     => 'დაწყება',
+        ],
+    ][$sl];
+@endphp
+<div id="welcome-splash">
+    <div class="splash-inner">
+        @if(!empty($splash['logo']))
+            <img class="splash-org-logo" src="{{ Storage::url($splash['logo']) }}" alt="{{ $splash['org'] }}">
+        @else
+            <div class="splash-logo">MYHOME<span>-MAP</span></div>
+        @endif
+        <div class="splash-greeting">{{ $st['welcome'] }} <strong>{{ $splash['name'] }}</strong></div>
+        <div class="splash-divider"></div>
+        <div class="splash-title">{{ $st['youre_in'] }}</div>
+        <div class="splash-sub">{{ $st['joined'] }} <strong style="color:#e2e8f0">{{ $splash['org'] }}</strong>.<br>{{ $st['explore'] }}</div>
+        <div class="splash-progress-wrap">
+            <div class="splash-progress-bar" id="splash-bar"></div>
+        </div>
+        <div class="splash-progress-label" id="splash-label">{{ $st['init'] }}</div>
+        <button class="splash-btn" id="splash-btn" onclick="dismissSplash()" disabled>{{ $st['open'] }}</button>
+    </div>
+</div>
+<script>
+window.__splashSteps = [
+    { pct: 15,  ms: 700,  text: '{{ $st['loading'] }}' },
+    { pct: 35,  ms: 1000, text: '{{ $st['placing'] }}' },
+    { pct: 58,  ms: 900,  text: '{{ $st['fetching'] }}' },
+    { pct: 78,  ms: 800,  text: '{{ $st['district'] }}' },
+    { pct: 92,  ms: 700,  text: '{{ $st['almost'] }}' },
+    { pct: 100, ms: 500,  text: '{{ $st['ready'] }}' },
+];
+</script>
+@endif
+
 <div id="header">
-    <h1>MYHOME<span>-MAP</span></h1>
+    @auth
+        @if(auth()->user()->inOrg() && auth()->user()->organization->logo)
+            <img id="org-logo" src="{{ Storage::url(auth()->user()->organization->logo) }}" alt="{{ auth()->user()->organization->name }}">
+        @else
+            <h1>MYHOME<span>-MAP</span></h1>
+        @endif
+    @else
+        <h1>MYHOME<span>-MAP</span></h1>
+    @endauth
     <div id="status-bar">
         <div id="live-dot"></div>
         <span id="status-text"></span>
     </div>
+    <button id="saved-btn" onclick="exportSaved()">⬇ Export (<span id="saved-count">0</span>)</button>
+
+    @auth
+    <div id="user-menu">
+        <button id="user-trigger" onclick="toggleUserMenu()">
+            <span id="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+            <span id="user-name">{{ auth()->user()->name }}</span>
+            <span style="font-size:10px;opacity:.6">▼</span>
+        </button>
+        <div id="user-dropdown">
+            <div id="user-info">
+                <strong>{{ auth()->user()->name }}</strong>
+                <span>{{ auth()->user()->email }}</span>
+                <span class="user-plan {{ auth()->user()->isPro() ? 'plan-pro' : 'plan-free' }}">
+                    {{ auth()->user()->isPro() ? 'Pro' : 'Free' }}
+                </span>
+            </div>
+            @if(auth()->user()->isSuperAdmin())
+                <a href="{{ route('admin.index') }}">⚙ Admin Panel</a>
+            @endif
+            @if(auth()->user()->isCeo())
+                <a href="/dashboard">📊 Dashboard</a>
+            @endif
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit">Sign out</button>
+            </form>
+        </div>
+    </div>
+    @endauth
+
     <div id="lang-switcher">
         <button class="lang-btn active" onclick="setLang('en')">EN</button>
         <button class="lang-btn" onclick="setLang('ru')">RU</button>
+        <button class="lang-btn" onclick="setLang('ka')">KA</button>
     </div>
 </div>
 
@@ -232,9 +457,56 @@
 
 <div id="map"></div>
 
+@guest
+<div id="auth-overlay">
+    <div id="auth-box">
+        <div class="auth-logo">MYHOME<span>-MAP</span></div>
+        <p>Sign in to view listings on the map.</p>
+        <a href="/login">Sign in</a>
+    </div>
+</div>
+@endguest
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
+// ── Splash ────────────────────────────────────────────────────────────────
+(function () {
+    const bar   = document.getElementById('splash-bar');
+    const label = document.getElementById('splash-label');
+    const btn   = document.getElementById('splash-btn');
+    if (!bar) return;
+
+    const steps = window.__splashSteps || [
+        { pct: 15,  ms: 700,  text: 'Loading listings…' },
+        { pct: 35,  ms: 1000, text: 'Placing pins on map…' },
+        { pct: 58,  ms: 900,  text: 'Fetching team data…' },
+        { pct: 78,  ms: 800,  text: 'Filtering by district…' },
+        { pct: 92,  ms: 700,  text: 'Almost ready…' },
+        { pct: 100, ms: 500,  text: 'Ready!' },
+    ];
+
+    let elapsed = 0;
+    steps.forEach(({ pct, ms, text }) => {
+        setTimeout(() => {
+            bar.style.transition = `width ${ms}ms cubic-bezier(.4,0,.2,1)`;
+            bar.style.width = pct + '%';
+            label.textContent = text;
+            if (pct === 100) {
+                setTimeout(() => { btn.disabled = false; }, ms);
+            }
+        }, elapsed);
+        elapsed += ms;
+    });
+})();
+
+function dismissSplash() {
+    const el = document.getElementById('welcome-splash');
+    if (!el) return;
+    el.classList.add('fade-out');
+    setTimeout(() => el.remove(), 650);
+}
+
 // ── Translations ──────────────────────────────────────────────────────────
 
 const translations = {
@@ -294,6 +566,34 @@ const translations = {
         rooms_suffix:    'комн.',
         bedrooms_suffix: 'сп.',
     },
+    ka: {
+        pill_price:    'ფასი',
+        pill_period:   'პერიოდი',
+        pill_rooms:    'ოთახები',
+        pill_bedrooms: 'საძინებლები',
+        pill_building: 'შენობა',
+        label_price:    'ფასი (USD / თვეში)',
+        label_period:   'იჯარის პერიოდი',
+        label_rooms:    'ოთახების რაოდენობა',
+        label_bedrooms: 'საძინებლები',
+        label_building: 'შენობის ტიპი',
+        all:         'ყველა',
+        monthly:     'თვიური',
+        daily:       'დღიური',
+        newly_built: 'ახალაშენებული',
+        apply:       'გამოყენება',
+        owner:       'მფლობელი',
+        agency:      'სააგენტო',
+        view:        'გახსნა myhome.ge-ზე →',
+        loading:     'იტვირთება...',
+        n_found:     (n) => `ნაპოვნია: ${n}`,
+        finding:     (n) => `ნაპოვნია: ${n}...`,
+        error:       'შეცდომა — სცადეთ თავიდან',
+        min_price:   'მინ $',
+        max_price:   'მაქს $',
+        rooms_suffix:    'ოთ.',
+        bedrooms_suffix: 'სძ.',
+    },
 };
 
 let lang = localStorage.getItem('lang') || 'en';
@@ -335,7 +635,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 let markers = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 60 });
 map.addLayer(markers);
 let activeStream = null;
-let openDrop = null;
+let openDrop     = null;
+const allListings = new Map(); // listing_id → listing data, used for CSV export
 
 // ── Dropdown logic ────────────────────────────────────────────────────────
 
@@ -424,6 +725,7 @@ function setStatus(text, live = false) {
 function startStream() {
     if (activeStream) { activeStream.abort(); activeStream = null; }
     markers.clearLayers();
+    allListings.clear();
     setStatus(tr('loading'), true);
 
     const params = new URLSearchParams();
@@ -463,6 +765,8 @@ function startStream() {
 }
 
 function addMarker(l) {
+    allListings.set(String(l.id), l);
+
     const marker = L.marker([l.lat, l.lng]);
     const price  = l.price ? `$${Number(l.price).toLocaleString()}` : 'N/A';
     const period = l.period ?? (l.rent_type === 'daily' ? '/day' : '/month');
@@ -475,6 +779,21 @@ function addMarker(l) {
         l.district || null,
     ].filter(Boolean).map(t => `<span class="popup-chip">${t}</span>`).join('');
 
+    const contactHtml = (l.owner_name || l.phone) ? `
+        <div class="popup-contact">
+            ${l.owner_name ? `<div class="popup-contact-row">👤 <strong>${l.owner_name}</strong></div>` : ''}
+            ${l.phone ? `<div class="popup-contact-row">📞 <strong>${l.phone}</strong></div>` : ''}
+        </div>` : '';
+
+    const lid          = String(l.id);
+    const alreadySaved = mySaves.has(lid);
+    const savedByTeam  = teamSaves.get(lid);
+    const savedEntry   = mySaves.get(lid);
+
+    const teamBadge = savedByTeam
+        ? `<div style="font-size:11px;color:#f59e0b;margin-bottom:8px">⭐ Saved by ${savedByTeam}</div>`
+        : '';
+
     marker.bindPopup(`
         <div class="popup-body">
             <div class="popup-header">
@@ -485,6 +804,17 @@ function addMarker(l) {
             ${l.updated_at ? `<div class="popup-address">🕐 ${l.updated_at}</div>` : ''}
             ${chips ? `<div class="popup-meta">${chips}</div>` : ''}
             <div class="popup-price">${price}<span class="period">${period}</span></div>
+            ${contactHtml}
+            ${teamBadge}
+            <div class="popup-save-row">
+                <input type="number" id="my-price-${lid}" placeholder="My price $"
+                    value="${alreadySaved ? (savedEntry?.myPrice || '') : ''}" min="0" step="50">
+                <button class="popup-save-btn ${alreadySaved ? 'saved' : ''}"
+                    id="save-btn-${lid}"
+                    onclick="toggleSave(${JSON.stringify(l)})">
+                    ${alreadySaved ? '✓ Saved' : '+ Save'}
+                </button>
+            </div>
             <a class="popup-link" href="${l.url}" target="_blank" rel="noopener">${tr('view')}</a>
         </div>
     `, { maxWidth: 310 });
@@ -493,11 +823,101 @@ function addMarker(l) {
     if (markers.getLayers().length === 1) map.setView([l.lat, l.lng], 13);
 }
 
+// ── Saved list ────────────────────────────────────────────────────────────────
+
+const isAuthed   = !!document.querySelector('meta[name="user-authed"]');
+const csrfToken  = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+// listing_id → {myPrice} for current user; populated on load
+const mySaves   = new Map();
+// listing_id → employee name; populated on load (team saves)
+const teamSaves = new Map();
+
+function updateSavedBtn() {
+    const count = mySaves.size;
+    document.getElementById('saved-count').textContent = count;
+    document.getElementById('saved-btn').style.display = count ? 'block' : 'none';
+}
+
+async function loadSaves() {
+    if (!isAuthed) return;
+    try {
+        const [mine, team] = await Promise.all([
+            fetch('/api/my-saves').then(r => r.json()),
+            fetch('/api/team-saves').then(r => r.json()),
+        ]);
+        Object.entries(mine).forEach(([id, price]) => mySaves.set(id, { myPrice: price }));
+        Object.entries(team).forEach(([id, name]) => teamSaves.set(id, name));
+        updateSavedBtn();
+    } catch (e) {}
+}
+
+async function toggleSave(l) {
+    if (!isAuthed) { window.location = '/login'; return; }
+
+    const myPrice = document.getElementById('my-price-' + l.id)?.value || '';
+    const btn     = document.getElementById('save-btn-' + l.id);
+
+    const res  = await fetch('/api/save', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        body:    JSON.stringify({ listing_id: l.id, listing_snapshot: l, my_price: myPrice || null }),
+    });
+    const data = await res.json();
+
+    if (data.saved) {
+        mySaves.set(l.id, { myPrice });
+        if (btn) { btn.textContent = '✓ Saved'; btn.classList.add('saved'); }
+    } else {
+        mySaves.delete(l.id);
+        if (btn) { btn.textContent = '+ Save'; btn.classList.remove('saved'); }
+    }
+    updateSavedBtn();
+}
+
+function exportSaved() {
+    if (!mySaves.size) return;
+
+    const rows = [['ID', 'Title', 'Address', 'Owner', 'Phone', 'Original Price', 'My Price', 'Rent Type', 'Rooms', 'Bedrooms', 'Area', 'District', 'URL']];
+
+    mySaves.forEach((entry, id) => {
+        // Find the listing data from markers (stored on the marker object)
+        const l = allListings.get(id);
+        if (!l) return;
+        rows.push([
+            l.id, l.title, l.address, l.owner_name ?? '', l.phone ?? '',
+            l.price, entry.myPrice ?? '', l.rent_type, l.rooms ?? '',
+            l.bedrooms ?? '', l.area ?? '', l.district ?? '', l.url,
+        ]);
+    });
+
+    const csv = '﻿' + rows.map(r =>
+        r.map(v => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(',')
+    ).join('\r\n');
+
+    const a    = document.createElement('a');
+    a.href     = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'my-listings-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+}
+
+// ── User menu ─────────────────────────────────────────────────────────────────
+
+function toggleUserMenu() {
+    document.getElementById('user-dropdown')?.classList.toggle('open');
+}
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('#user-menu')) {
+        document.getElementById('user-dropdown')?.classList.remove('open');
+    }
+});
+
 // ── Init ──────────────────────────────────────────────────────────────────
 
 window.addEventListener('load', () => {
     setLang(lang);
-    startStream();
+    loadSaves().then(() => startStream());
 });
 </script>
 </body>

@@ -9,6 +9,10 @@ class ListingController extends Controller
 {
     public function index()
     {
+        if (auth()->check()) {
+            auth()->user()->load('organization');
+        }
+
         return view('map');
     }
 
