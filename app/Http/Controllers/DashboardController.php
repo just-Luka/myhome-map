@@ -60,9 +60,19 @@ class DashboardController extends Controller
         ));
     }
 
+    public function settings()
+    {
+        $org     = auth()->user()->organization;
+        $members = $org->users()->get();
+        return view('dashboard.settings', compact('org', 'members'));
+    }
+
     public function updateSettings(Request $request)
     {
-        $data = ['show_team_saves' => $request->boolean('show_team_saves')];
+        $data = [
+            'show_team_saves'  => $request->boolean('show_team_saves'),
+            'show_team_prices' => $request->boolean('show_team_prices'),
+        ];
         if ($request->filled('save_limit')) {
             $data['save_limit'] = max(1, min(200, (int) $request->input('save_limit')));
         }

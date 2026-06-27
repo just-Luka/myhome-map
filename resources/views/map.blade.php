@@ -624,6 +624,26 @@
             border-radius: 8px; transition: background 0.2s;
         }
         .popup-link:hover { background: #e94560; }
+        .team-avatars { display: flex; gap: 4px; align-items: center; margin-bottom: 8px; }
+        .team-avatar {
+            width: 26px; height: 26px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 10px; font-weight: 700;
+            cursor: default; position: relative; flex-shrink: 0;
+            border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+        }
+        .team-avatar .avatar-tooltip {
+            display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+            transform: translateX(-50%); background: #1a1a2e; color: #fff;
+            font-size: 11px; font-weight: 600; white-space: nowrap;
+            padding: 4px 8px; border-radius: 6px; pointer-events: none; z-index: 9999;
+        }
+        .team-avatar .avatar-tooltip::after {
+            content: ''; position: absolute; top: 100%; left: 50%;
+            transform: translateX(-50%); border: 5px solid transparent;
+            border-top-color: #1a1a2e;
+        }
+        .team-avatar:hover .avatar-tooltip { display: block; }
     </style>
 </head>
 <body>
@@ -738,6 +758,7 @@ window.__splashSteps = [
             @endif
             @if(auth()->user()->isCeo())
                 <a href="/dashboard">📊 Dashboard</a>
+                <a href="{{ route('dashboard.settings') }}">⚙ Settings</a>
             @endif
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
@@ -893,7 +914,7 @@ window.__splashSteps = [
             <a id="iframe-open-tab" href="#" target="_blank" rel="noopener" style="font-size:12px;color:#7dd3fc;white-space:nowrap;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#7dd3fc'">↗ Open in tab</a>
             <button onclick="closeIframeModal()" style="background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer;line-height:1;padding:0 4px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">×</button>
         </div>
-        <iframe id="iframe-content" src="" style="flex:1;border:none;width:100%;"></iframe>
+        <iframe id="iframe-content" src="" style="flex:1;border:none;width:100%;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>
     </div>
 </div>
 
@@ -1212,7 +1233,9 @@ function addMarker(l) {
     const save = mySaves.get(String(l.id));
     if (save && !save.listing) { save.listing = l; }
 
-    const marker = L.marker([l.lat, l.lng]);
+    const marker = L.marker([l.lat, l.lng], {
+        opacity: (currentView === 'all' && viewedListings.has(String(l.id))) ? 0.35 : 1,
+    });
     const price  = l.price ? `$${Number(l.price).toLocaleString()}` : 'N/A';
     const period = l.period ?? (l.rent_type === 'daily' ? '/day' : '/month');
     const posterLabel = l.poster_type === 'owner' ? tr('owner') : tr('agency');
@@ -1235,8 +1258,17 @@ function addMarker(l) {
     const savedByTeam  = teamSaves.get(lid);
     const savedEntry   = mySaves.get(lid);
 
-    const teamBadge = savedByTeam
-        ? `<div style="font-size:11px;color:#f59e0b;margin-bottom:8px">⭐ Saved by ${savedByTeam}</div>`
+    const teamBadge = savedByTeam?.length
+        ? `<div class="team-avatars">${savedByTeam.map(entry => {
+               const name = entry.name ?? entry;
+               const price = entry.price;
+               const initials = name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+               const hue = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+               const tooltip = price ? `${name} · $${price}` : name;
+               return `<div class="team-avatar" style="background:hsl(${hue},55%,48%);">
+                   ${initials}<span class="avatar-tooltip">${tooltip}</span>
+               </div>`;
+           }).join('')}</div>`
         : '';
 
     marker.bindPopup(`
@@ -1260,10 +1292,11 @@ function addMarker(l) {
                     ${alreadySaved ? '✓ Saved' : '+ Save'}
                 </button>
             </div>
-            <a class="popup-link" href="#" onclick="openIframeModal('${l.url}');return false;">${tr('view')}</a>
+            <a class="popup-link" href="${l.url}" target="_blank" rel="noopener" onclick="markViewed('${lid}')">${tr('view')}</a>
         </div>
     `, { maxWidth: 310 });
 
+    markerMap.set(String(l.id), marker);
     markers.addLayer(marker);
     if (markers.getLayers().length === 1) map.setView([l.lat, l.lng], 13);
 }
@@ -1298,6 +1331,18 @@ function toggleTheme() {
 const mySaves   = new Map();
 // listing_id → employee name; populated on load (team saves)
 const teamSaves = new Map();
+// listing_id → Leaflet marker, for opacity updates
+const markerMap = new Map();
+let currentView = 'all';
+// viewed listing IDs, persisted in localStorage
+const viewedListings = new Set(JSON.parse(localStorage.getItem('viewedListings') || '[]'));
+function markViewed(lid) {
+    if (viewedListings.has(lid)) return;
+    viewedListings.add(lid);
+    localStorage.setItem('viewedListings', JSON.stringify([...viewedListings]));
+    const m = markerMap.get(lid);
+    if (m) m.setOpacity(0.35);
+}
 
 let panelOpen      = false;
 let saveLimit      = 20;
@@ -1837,7 +1882,7 @@ async function loadSaves() {
         }));
         archiveSaves.length = 0;
         allRes.forEach(e => archiveSaves.push(e));
-        Object.entries(team).forEach(([id, name]) => teamSaves.set(id, name));
+        Object.entries(team).forEach(([id, entries]) => teamSaves.set(id, Array.isArray(entries) ? entries : [entries]));
         updateSavedBtn();
     } catch (e) {}
 }
@@ -1911,6 +1956,7 @@ function exportSaved() {
 // ── View switcher ─────────────────────────────────────────────────────────────
 
 function setView(val) {
+    currentView = val;
     document.querySelectorAll('.vsw-btn').forEach(b => b.classList.toggle('active', b.dataset.view === val));
     if (val === 'all') {
         startStream();

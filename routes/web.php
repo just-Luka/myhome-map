@@ -39,8 +39,9 @@ Route::middleware('auth')->group(function () {
 
 // ── CEO dashboard ─────────────────────────────────────────────────────────────
 Route::middleware(\App\Http\Middleware\CeoAccess::class)->group(function () {
-    Route::get('/dashboard',          [DashboardController::class, 'index'])->name('dashboard');
-    Route::patch('/dashboard/settings',[DashboardController::class, 'updateSettings'])->name('dashboard.settings');
+    Route::get('/dashboard',                   [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/settings',          [DashboardController::class, 'settings'])->name('dashboard.settings');
+    Route::patch('/dashboard/settings',        [DashboardController::class, 'updateSettings'])->name('dashboard.settings.update');
     Route::post('/dashboard/invite',  [DashboardController::class, 'generateInvite'])->name('dashboard.invite');
     Route::get('/dashboard/export',    [DashboardController::class, 'export'])->name('dashboard.export');
     Route::post('/dashboard/logo',     [DashboardController::class, 'uploadLogo'])->name('dashboard.logo');

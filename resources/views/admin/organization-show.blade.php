@@ -101,6 +101,13 @@
                     </div>
                     <input type="checkbox" name="show_team_saves" value="1" {{ $org->show_team_saves ? 'checked' : '' }}>
                 </div>
+                <div class="toggle-row" style="margin-top:12px">
+                    <div class="toggle-label">
+                        <span>Show Team Prices</span>
+                        <small>Show teammates' saved price on hover</small>
+                    </div>
+                    <input type="checkbox" name="show_team_prices" value="1" {{ $org->show_team_prices ? 'checked' : '' }}>
+                </div>
                 <button class="btn btn-primary" style="margin-top:18px;width:100%" type="submit">Save Changes</button>
             </form>
         </div>

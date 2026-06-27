@@ -19,4 +19,12 @@ class SavedListing extends Model
     {
         return $this->belongsTo(Organization::class);
     }
+
+    public function discountPercent(): ?int
+    {
+        $orig = (float) ($this->listing_snapshot['price'] ?? 0);
+        $mine = (float) ($this->my_price ?? 0);
+        if (! $mine || ! $orig || $orig <= $mine) return null;
+        return (int) round(($orig - $mine) / $orig * 100);
+    }
 }

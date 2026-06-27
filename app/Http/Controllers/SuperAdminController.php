@@ -76,15 +76,17 @@ class SuperAdminController extends Controller
     public function updateOrg(Request $request, Organization $org)
     {
         $data = $request->validate([
-            'name'            => 'required|string|max:100',
-            'user_limit'      => 'required|integer|min:1|max:500',
-            'show_team_saves' => 'boolean',
+            'name'             => 'required|string|max:100',
+            'user_limit'       => 'required|integer|min:1|max:500',
+            'show_team_saves'  => 'boolean',
+            'show_team_prices' => 'boolean',
         ]);
 
         $org->update([
-            'name'            => $data['name'],
-            'user_limit'      => $data['user_limit'],
-            'show_team_saves' => $request->boolean('show_team_saves'),
+            'name'             => $data['name'],
+            'user_limit'       => $data['user_limit'],
+            'show_team_saves'  => $request->boolean('show_team_saves'),
+            'show_team_prices' => $request->boolean('show_team_prices'),
         ]);
 
         return back()->with('success', 'Organization updated.');

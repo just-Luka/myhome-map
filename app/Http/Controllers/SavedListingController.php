@@ -149,12 +149,17 @@ class SavedListingController extends Controller
             return response()->json([]);
         }
 
+        $showPrices = $org->show_team_prices;
+
         $saves = SavedListing::with('user:id,name')
             ->where('organization_id', $org->id)
             ->where('user_id', '!=', $user->id)
-            ->get(['listing_id', 'user_id'])
-            ->keyBy('listing_id')
-            ->map(fn ($s) => $s->user->name);
+            ->get(['listing_id', 'user_id', 'my_price'])
+            ->groupBy('listing_id')
+            ->map(fn ($rows) => $rows->map(fn ($r) => [
+                'name'  => $r->user?->name,
+                'price' => $showPrices ? $r->my_price : null,
+            ])->filter(fn ($r) => $r['name'])->values());
 
         return response()->json($saves);
     }

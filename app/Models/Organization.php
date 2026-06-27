@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Organization extends Model
 {
-    protected $fillable = ['name', 'logo', 'user_limit', 'show_team_saves', 'save_limit'];
+    protected $fillable = ['name', 'logo', 'user_limit', 'show_team_saves', 'show_team_prices', 'save_limit'];
 
-    protected $casts = ['show_team_saves' => 'boolean'];
+    protected $casts = ['show_team_saves' => 'boolean', 'show_team_prices' => 'boolean'];
 
     public function users()
     {
