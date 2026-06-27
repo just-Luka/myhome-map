@@ -1,6 +1,7 @@
 <script>
 (function () {
-    if (localStorage.getItem('theme') === 'light') {
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'light') {
         document.body.classList.add('theme-light');
         const btn = document.getElementById('theme-toggle');
         if (btn) btn.textContent = '☀️';

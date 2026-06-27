@@ -1458,7 +1458,7 @@ const csrfToken  = document.querySelector('meta[name="csrf-token"]')?.content ||
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
 (function () {
-    const saved = localStorage.getItem('theme') || 'dark';
+    const saved = localStorage.getItem('theme') || 'light';
     applyTheme(saved);
 })();
 function applyTheme(theme) {
