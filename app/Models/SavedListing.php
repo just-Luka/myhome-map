@@ -20,6 +20,20 @@ class SavedListing extends Model
         return $this->belongsTo(Organization::class);
     }
 
+    public function myhomePostId(): ?string
+    {
+        if (! $this->link_myhome) return null;
+        preg_match('/\/pr\/(\d+)/i', $this->link_myhome, $m);
+        return $m[1] ?? null;
+    }
+
+    public function ssPostId(): ?string
+    {
+        if (! $this->link_ss) return null;
+        preg_match('/(\d+)$/', rtrim($this->link_ss, '/'), $m);
+        return $m[1] ?? null;
+    }
+
     public function discountPercent(): ?int
     {
         $orig = (float) ($this->listing_snapshot['price'] ?? 0);

@@ -29,7 +29,7 @@
     @if($users->isEmpty())
         <div class="empty">No users found.</div>
     @else
-    <table class="tbl">
+    <table>
         <thead>
             <tr><th>Name</th><th>Role</th><th>Plan</th><th>Organization</th><th>Saves</th><th>Joined</th><th></th></tr>
         </thead>

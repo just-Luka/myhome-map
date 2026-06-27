@@ -23,7 +23,7 @@
             @if($org->users->isEmpty())
                 <div class="empty">No members yet. Share the CEO invite link.</div>
             @else
-            <table class="tbl">
+            <table>
                 <thead><tr><th>Name</th><th>Role</th><th>Plan</th><th>Saves</th><th>Joined</th><th></th></tr></thead>
                 <tbody>
                 @foreach($org->users as $u)
@@ -50,7 +50,7 @@
             @if($saves->isEmpty())
                 <div class="empty">No saves yet.</div>
             @else
-            <table class="tbl">
+            <table>
                 <thead><tr><th>Employee</th><th>Listing</th><th>My Price</th><th>Saved</th></tr></thead>
                 <tbody>
                 @foreach($saves as $s)

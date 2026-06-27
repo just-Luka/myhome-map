@@ -65,7 +65,7 @@
     <div>
         <div class="card">
             <div class="card-title">Account Info</div>
-            <table class="tbl">
+            <table>
                 <tr><td style="color:#4d5780">ID</td><td>#{{ $user->id }}</td></tr>
                 <tr><td style="color:#4d5780">Saves</td><td>{{ $user->savedListings->count() }}</td></tr>
                 <tr><td style="color:#4d5780">Joined</td><td style="font-size:12px">{{ $user->created_at->format('M d, Y') }}</td></tr>

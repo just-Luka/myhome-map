@@ -116,6 +116,8 @@
         [data-theme="light"] .saved-card-note-trigger.has-note { color: #1a202c; }
         [data-theme="light"] .saved-card-note-area { background: #f8fafc; border-color: #dde3eb; color: #1a202c; }
         [data-theme="light"] .archive-row-price { color: #c0392b; }
+        [data-theme="light"] .panel-btn-exclusive { background: #eef0ff; color: #4f46e5; }
+        [data-theme="light"] .panel-btn-exclusive:hover { background: #e0e3ff; }
         [data-theme="light"] .panel-btn-export { background: #dcfce7; color: #166534; }
         [data-theme="light"] .panel-btn-export:hover { background: #bbf7d0; }
         [data-theme="light"] .panel-btn-clear { background: #fee2e2; color: #991b1b; }
@@ -145,6 +147,21 @@
         [data-theme="light"] .arc-btn-edit:hover { background: #dde3eb; color: #1a202c; }
         [data-theme="light"] .arc-btn-remove { background: #fee2e2; color: #dc2626; }
         [data-theme="light"] .arc-btn-remove:hover { background: #fecaca; }
+
+        [data-theme="light"] #custom-modal { background: rgba(100,116,139,.4); }
+        [data-theme="light"] #custom-modal-box { background: #fff; border-color: #dde3eb; }
+        [data-theme="light"] #custom-modal-box::-webkit-scrollbar-thumb { background: #cbd5e0; }
+        [data-theme="light"] .cm-header { border-bottom-color: #dde3eb; }
+        [data-theme="light"] .cm-header h2 { color: #1a202c; }
+        [data-theme="light"] .cm-close { color: #718096; }
+        [data-theme="light"] .cm-close:hover { color: #1a202c; background: #f0f4f8; }
+        [data-theme="light"] .cm-field label { color: #718096; }
+        [data-theme="light"] .cm-field input, [data-theme="light"] .cm-field textarea { background: #f8fafc; border-color: #dde3eb; color: #1a202c; }
+        [data-theme="light"] .cm-field input:focus, [data-theme="light"] .cm-field textarea:focus { border-color: #4f6ef7; }
+        [data-theme="light"] .cm-field input::placeholder, [data-theme="light"] .cm-field textarea::placeholder { color: #a0aec0; }
+        [data-theme="light"] .cm-cancel { border-color: #dde3eb; color: #4a5568; }
+        [data-theme="light"] .cm-cancel:hover { border-color: #4f6ef7; color: #1a202c; }
+        [data-theme="light"] .cm-submit:disabled { background: #e2e8f0; color: #a0aec0; }
 
         [data-theme="light"] #user-trigger { color: #1a202c; }
         [data-theme="light"] #user-avatar { background: #e94560; }
@@ -400,6 +417,8 @@
             flex: 1; padding: 7px; font-size: 12px; font-weight: 600; border-radius: 7px;
             border: none; cursor: pointer; transition: all 0.15s;
         }
+        .panel-btn-exclusive { background: #1a1f3a; color: #818cf8; }
+        .panel-btn-exclusive:hover { background: #252c52; }
         .panel-btn-export { background: #1e3a1e; color: #86efac; }
         .panel-btn-export:hover { background: #166534; }
         .panel-btn-clear { background: #2a1a1a; color: #f87171; }
@@ -635,15 +654,64 @@
         .team-avatar .avatar-tooltip {
             display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
             transform: translateX(-50%); background: #1a1a2e; color: #fff;
-            font-size: 11px; font-weight: 600; white-space: nowrap;
-            padding: 4px 8px; border-radius: 6px; pointer-events: none; z-index: 9999;
+            font-size: 11px; white-space: nowrap; text-align: center;
+            padding: 6px 10px; border-radius: 6px; pointer-events: none; z-index: 9999;
         }
+        .team-avatar .avatar-tooltip .tt-name  { font-weight: 700; }
+        .team-avatar .avatar-tooltip .tt-price { color: #86efac; font-weight: 600; margin-top: 2px; }
         .team-avatar .avatar-tooltip::after {
             content: ''; position: absolute; top: 100%; left: 50%;
             transform: translateX(-50%); border: 5px solid transparent;
             border-top-color: #1a1a2e;
         }
         .team-avatar:hover .avatar-tooltip { display: block; }
+
+        /* ── Custom listing modal ── */
+        .badge-exclusive {
+            display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: .05em;
+            text-transform: uppercase; padding: 2px 6px; border-radius: 4px;
+            background: rgba(79,110,247,0.15); color: #7dd3fc; margin-bottom: 4px;
+        }
+        #custom-modal {
+            display: none; position: fixed; inset: 0; z-index: 9998;
+            background: rgba(0,0,0,.6); backdrop-filter: blur(2px);
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        #custom-modal.open { display: flex; }
+        #custom-modal-box {
+            background: #1a1d2e; border: 1px solid #2d3149; border-radius: 14px;
+            width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,.6);
+        }
+        #custom-modal-box::-webkit-scrollbar { width: 4px; }
+        #custom-modal-box::-webkit-scrollbar-thumb { background: #2d3149; border-radius: 2px; }
+        .cm-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 24px; border-bottom: 1px solid #2d3149;
+        }
+        .cm-header h2 { font-size: 15px; font-weight: 700; color: #e2e8f0; }
+        .cm-close { background: none; border: none; color: #64748b; font-size: 20px; cursor: pointer; line-height: 1; padding: 2px 4px; border-radius: 6px; }
+        .cm-close:hover { color: #e2e8f0; background: #1e2235; }
+        .cm-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+        .cm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .cm-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .cm-field { display: flex; flex-direction: column; gap: 5px; }
+        .cm-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #64748b; }
+        .cm-field input, .cm-field textarea {
+            background: #0f1117; border: 1px solid #2d3149; border-radius: 8px;
+            padding: 8px 12px; color: #e2e8f0; font-size: 13px; outline: none;
+            transition: border-color .15s; width: 100%;
+        }
+        .cm-field input:focus, .cm-field textarea:focus { border-color: #4f6ef7; }
+        .cm-field textarea { resize: vertical; min-height: 64px; font-family: inherit; }
+        .cm-field input::placeholder, .cm-field textarea::placeholder { color: #3d4466; }
+        .cm-footer { padding: 0 24px 20px; display: flex; gap: 10px; }
+        .cm-submit { flex: 1; padding: 10px; border-radius: 8px; border: none; background: #4f6ef7; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; }
+        .cm-submit:hover { background: #3b5be0; }
+        .cm-submit:disabled { background: #2d3149; color: #64748b; cursor: not-allowed; }
+        .cm-cancel { padding: 10px 16px; border-radius: 8px; border: 1px solid #3d4466; background: transparent; color: #94a3b8; font-size: 13px; cursor: pointer; }
+        .cm-cancel:hover { border-color: #4f6ef7; color: #e2e8f0; }
+        .cm-error { font-size: 12px; color: #f87171; padding: 0 24px 12px; display: none; }
     </style>
 </head>
 <body>
@@ -757,8 +825,8 @@ window.__splashSteps = [
                 <a href="{{ route('admin.index') }}">⚙ Admin Panel</a>
             @endif
             @if(auth()->user()->isCeo())
-                <a href="/dashboard">📊 Dashboard</a>
-                <a href="{{ route('dashboard.settings') }}">⚙ Settings</a>
+                <a href="{{ route('owner.dashboard') }}">📊 Dashboard</a>
+                <a href="{{ route('owner.settings') }}">⚙ Settings</a>
             @endif
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
@@ -867,6 +935,9 @@ window.__splashSteps = [
         <span class="sp-section-title">Today</span>
         <span id="saved-panel-count" class="sp-section-meta">0/20</span>
         <div class="sp-section-actions">
+            @auth
+            <button class="panel-btn panel-btn-exclusive" onclick="openCustomModal()">+ Exclusive</button>
+            @endauth
             <button class="panel-btn panel-btn-export" onclick="exportSaved()">Excel</button>
             <button class="panel-btn panel-btn-clear"  onclick="clearSaved()">Clear</button>
         </div>
@@ -881,6 +952,83 @@ window.__splashSteps = [
         </button>
     </div>
 </div>
+
+<!-- Custom / Exclusive listing modal -->
+@auth
+<div id="custom-modal">
+    <div id="custom-modal-box">
+        <div class="cm-header">
+            <h2>Add Exclusive Listing</h2>
+            <button class="cm-close" onclick="closeCustomModal()">×</button>
+        </div>
+        <form id="custom-form" onsubmit="submitCustomListing(event)">
+            <div class="cm-body">
+                <div class="cm-field">
+                    <label>Title *</label>
+                    <input type="text" name="title" placeholder="e.g. 3-room apartment in Vake" required>
+                </div>
+                <div class="cm-field">
+                    <label>Address</label>
+                    <input type="text" name="address" placeholder="Street, building…">
+                </div>
+                <div class="cm-row">
+                    <div class="cm-field">
+                        <label>Owner Name</label>
+                        <input type="text" name="owner_name" placeholder="Full name">
+                    </div>
+                    <div class="cm-field">
+                        <label>Phone</label>
+                        <input type="text" name="phone" placeholder="+995 5xx xxx xxx">
+                    </div>
+                </div>
+                <div class="cm-row">
+                    <div class="cm-field">
+                        <label>Asking Price ($)</label>
+                        <input type="number" name="price" placeholder="0" min="0">
+                    </div>
+                    <div class="cm-field">
+                        <label>My Price ($)</label>
+                        <input type="number" name="my_price" placeholder="0" min="0">
+                    </div>
+                </div>
+                <div class="cm-row cols-3">
+                    <div class="cm-field">
+                        <label>Rooms</label>
+                        <input type="text" name="rooms" placeholder="3">
+                    </div>
+                    <div class="cm-field">
+                        <label>Area (m²)</label>
+                        <input type="text" name="area" placeholder="75 m²">
+                    </div>
+                    <div class="cm-field">
+                        <label>District</label>
+                        <input type="text" name="district" placeholder="Vake">
+                    </div>
+                </div>
+                <div class="cm-row">
+                    <div class="cm-field">
+                        <label>myhome.ge post link</label>
+                        <input type="url" name="link_myhome" placeholder="https://myhome.ge/…">
+                    </div>
+                    <div class="cm-field">
+                        <label>ss.ge post link</label>
+                        <input type="url" name="link_ss" placeholder="https://ss.ge/…">
+                    </div>
+                </div>
+                <div class="cm-field">
+                    <label>Note</label>
+                    <textarea name="note" placeholder="Any additional details…"></textarea>
+                </div>
+            </div>
+            <div id="custom-form-error" class="cm-error"></div>
+            <div class="cm-footer">
+                <button type="button" class="cm-cancel" onclick="closeCustomModal()">Cancel</button>
+                <button type="submit" class="cm-submit" id="cm-submit-btn">Save Listing</button>
+            </div>
+        </form>
+    </div>
+</div>
+@endauth
 
 @guest
 <div id="auth-overlay">
@@ -1264,7 +1412,9 @@ function addMarker(l) {
                const price = entry.price;
                const initials = name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
                const hue = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
-               const tooltip = price ? `${name} · $${price}` : name;
+               const tooltip = price
+                   ? `<div class="tt-name">${name}</div><div class="tt-price">$${price}</div>`
+                   : `<div class="tt-name">${name}</div>`;
                return `<div class="team-avatar" style="background:hsl(${hue},55%,48%);">
                    ${initials}<span class="avatar-tooltip">${tooltip}</span>
                </div>`;
@@ -1391,17 +1541,20 @@ function renderSavedPanel() {
     list.innerHTML = '';
     [...mySaves.entries()].reverse().forEach(([id, entry]) => {
         const l = entry.listing || allListings.get(id);
+        const isCustom = id.startsWith('custom-');
         const card = document.createElement('div');
         card.className = 'saved-card';
         card.id = 'card-' + id;
 
         const priceFmt = formatPrice(l?.price, entry.myPrice);
         const contact = l?.owner_name ? `
-            <div class="saved-card-contact"><span>👤 ${l.owner_name}</span></div>` : '';
+            <div class="saved-card-contact"><span>👤 ${l.owner_name}</span>${l?.phone ? ` <span>📞 ${l.phone}</span>` : ''}</div>` : '';
 
         const noteText = entry.note || '';
         card.innerHTML = `
-            <div class="saved-card-title">${l?.title || 'Listing #' + id}</div>
+            <div class="saved-card-title">
+                ${isCustom ? '<span class="badge-exclusive">Exclusive</span> ' : ''}${l?.title || 'Listing #' + id}
+            </div>
             ${l?.address ? `<div class="saved-card-address">📍 ${l.address}</div>` : ''}
             <div class="saved-card-row">
                 <div class="saved-card-price">${priceFmt}</div>
@@ -1431,7 +1584,7 @@ function renderSavedPanel() {
                 </div>
             </div>
             <div class="saved-card-footer">
-                ${l?.url ? `<a class="saved-card-link" href="${l.url}" target="_blank" rel="noopener">View →</a>` : ''}
+                ${!isCustom && l?.url ? `<a class="saved-card-link" href="${l.url}" target="_blank" rel="noopener">View →</a>` : ''}
                 <button class="saved-card-remove" onclick="removeSave('${id}')">Remove</button>
             </div>
         `;
@@ -1980,6 +2133,59 @@ document.addEventListener('click', e => {
         document.getElementById('user-dropdown')?.classList.remove('open');
     }
 });
+
+// ── Custom / Exclusive listing modal ──────────────────────────────────────
+
+function openCustomModal() {
+    document.getElementById('custom-form').reset();
+    document.getElementById('custom-form-error').style.display = 'none';
+    document.getElementById('custom-modal').classList.add('open');
+}
+
+function closeCustomModal() {
+    document.getElementById('custom-modal').classList.remove('open');
+}
+
+document.getElementById('custom-modal')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('custom-modal')) closeCustomModal();
+});
+
+async function submitCustomListing(e) {
+    e.preventDefault();
+    const btn   = document.getElementById('cm-submit-btn');
+    const errEl = document.getElementById('custom-form-error');
+    btn.disabled    = true;
+    btn.textContent = 'Saving…';
+    errEl.style.display = 'none';
+
+    const data = Object.fromEntries(new FormData(document.getElementById('custom-form')));
+
+    try {
+        const res  = await fetch('/api/save/custom', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+            body:    JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Failed to save');
+
+        mySaves.set(json.listing_id, {
+            myPrice:    json.my_price    || null,
+            listing:    json.snapshot,
+            note:       json.note        || '',
+            linkMyhome: json.link_myhome || '',
+            linkSs:     json.link_ss     || '',
+        });
+        updateSavedBtn();
+        closeCustomModal();
+    } catch (err) {
+        errEl.textContent    = err.message;
+        errEl.style.display  = 'block';
+    } finally {
+        btn.disabled    = false;
+        btn.textContent = 'Save Listing';
+    }
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────
 

@@ -7,42 +7,33 @@ use Symfony\Component\Process\Process;
 
 class ScrapeController extends Controller
 {
-    private const PASSWORD = 'myhomemap2024';
-
     public function page()
     {
         return view('scrape');
     }
 
-    public function auth(Request $request)
-    {
-        if ($request->input('password') !== self::PASSWORD) {
-            return back()->with('error', 'Wrong password.');
-        }
-        session(['scrape_auth' => true]);
-        return redirect()->route('scrape.page');
-    }
-
     public function run(Request $request)
     {
-        if (! session('scrape_auth')) {
-            abort(403);
-        }
+        $pages       = max(1,   min(30,   (int) $request->input('pages', 30)));
+        $delay       = max(200, min(5000, (int) $request->input('delay', 400)));
+        $detailDelay = max(300, min(5000, (int) $request->input('detail_delay', 700)));
 
-        $pages = max(1, min(30, (int) $request->input('pages', 30)));
+        return response()->stream(function () use ($pages, $delay, $detailDelay) {
+            set_time_limit(0);
+            ini_set('max_execution_time', 0);
 
-        return response()->stream(function () use ($pages) {
             $send = function (string $line) {
                 echo 'data: ' . json_encode(['line' => $line]) . "\n\n";
                 ob_flush(); flush();
             };
 
-            $send("Starting scrape — {$pages} pages...");
+            $send("Starting scrape — {$pages} pages (page delay: {$delay}ms, detail delay: {$detailDelay}ms)...");
 
             $process = new Process([
-                PHP_BINARY, base_path('artisan'), 'scrape:myhome', "--pages={$pages}",
+                PHP_BINARY, base_path('artisan'), 'scrape:myhome',
+                "--pages={$pages}", "--delay={$delay}", "--detail-delay={$detailDelay}",
             ]);
-            $process->setTimeout(600);
+            $process->setTimeout(0);
             $process->start();
 
             foreach ($process as $type => $data) {

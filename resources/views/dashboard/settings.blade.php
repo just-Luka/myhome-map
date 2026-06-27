@@ -30,7 +30,7 @@
 
 <div class="card settings-card">
     <div class="card-title" style="margin-bottom:18px" data-i18n="settings_team">Team</div>
-    <form method="POST" action="{{ route('dashboard.settings.update') }}">
+    <form method="POST" action="{{ route('owner.settings.update') }}">
         @csrf @method('PATCH')
 
         <div class="toggle-row">

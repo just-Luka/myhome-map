@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\SavedListingController;
@@ -29,6 +30,7 @@ Route::middleware(['auth', 'throttle:60,1'])->get('/api/stream', [StreamControll
 // ── Authenticated users (saved listings + team info) ──────────────────────────
 Route::middleware('auth')->group(function () {
     Route::post('/api/save',        [SavedListingController::class, 'toggle'])->name('save.toggle');
+    Route::post('/api/save/custom', [SavedListingController::class, 'storeCustom'])->name('save.custom');
     Route::patch('/api/save/note',   [SavedListingController::class, 'updateNote'])->name('save.note');
     Route::patch('/api/save/links',  [SavedListingController::class, 'updateLinks'])->name('save.links');
     Route::patch('/api/save/update', [SavedListingController::class, 'updateEntry'])->name('save.update');
@@ -37,15 +39,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/team-saves',   [SavedListingController::class, 'teamSaves'])->name('save.team');
 });
 
-// ── CEO dashboard ─────────────────────────────────────────────────────────────
-Route::middleware(\App\Http\Middleware\CeoAccess::class)->group(function () {
-    Route::get('/dashboard',                   [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/settings',          [DashboardController::class, 'settings'])->name('dashboard.settings');
-    Route::patch('/dashboard/settings',        [DashboardController::class, 'updateSettings'])->name('dashboard.settings.update');
-    Route::post('/dashboard/invite',  [DashboardController::class, 'generateInvite'])->name('dashboard.invite');
-    Route::get('/dashboard/export',    [DashboardController::class, 'export'])->name('dashboard.export');
-    Route::post('/dashboard/logo',     [DashboardController::class, 'uploadLogo'])->name('dashboard.logo');
-    Route::delete('/dashboard/logo',   [DashboardController::class, 'removeLogo'])->name('dashboard.logo.remove');
+// ── Owner (CEO) ───────────────────────────────────────────────────────────────
+Route::middleware(\App\Http\Middleware\CeoAccess::class)->prefix('owner')->name('owner.')->group(function () {
+    Route::get('/dashboard',  [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/employees',                    [EmployeeController::class, 'index'])->name('employees');
+    Route::get('/employees/{user}',             [EmployeeController::class, 'show'])->name('employees.show');
+    Route::delete('/employees/{user}',          [EmployeeController::class, 'destroy'])->name('employees.destroy');
+    Route::patch('/employees/{user}/limit',     [EmployeeController::class, 'updateLimit'])->name('employees.limit');
+    Route::get('/employees/{user}/export',      [EmployeeController::class, 'export'])->name('employees.export');
+    Route::delete('/saves/{save}',              [EmployeeController::class, 'destroySave'])->name('saves.destroy');
+    Route::get('/settings',   [DashboardController::class, 'settings'])->name('settings');
+    Route::patch('/settings', [DashboardController::class, 'updateSettings'])->name('settings.update');
+    Route::post('/invite',    [DashboardController::class, 'generateInvite'])->name('invite');
+    Route::get('/export',     [DashboardController::class, 'export'])->name('export');
+    Route::post('/logo',      [DashboardController::class, 'uploadLogo'])->name('logo');
+    Route::delete('/logo',    [DashboardController::class, 'removeLogo'])->name('logo.remove');
 });
 
 // ── Super admin ───────────────────────────────────────────────────────────────

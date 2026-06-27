@@ -42,7 +42,7 @@ class SavedListingController extends Controller
     {
         $user  = auth()->user();
         $today = now()->toDateString();
-        $limit = $user->organization?->save_limit ?? 20;
+        $limit = $user->save_limit ?? $user->organization?->save_limit ?? 20;
 
         $saves = SavedListing::where('user_id', $user->id)
             ->where('saved_date', $today)
@@ -57,6 +57,59 @@ class SavedListingController extends Controller
             ]);
 
         return response()->json(['saves' => $saves, 'limit' => $limit]);
+    }
+
+    public function storeCustom(Request $request)
+    {
+        $request->validate([
+            'title'       => 'required|string|max:255',
+            'address'     => 'nullable|string|max:255',
+            'owner_name'  => 'nullable|string|max:100',
+            'phone'       => 'nullable|string|max:50',
+            'price'       => 'nullable|numeric|min:0',
+            'my_price'    => 'nullable|numeric|min:0',
+            'rooms'       => 'nullable|string|max:20',
+            'area'        => 'nullable|string|max:30',
+            'district'    => 'nullable|string|max:100',
+            'note'        => 'nullable|string|max:1000',
+            'link_myhome' => 'nullable|url|max:500',
+            'link_ss'     => 'nullable|url|max:500',
+        ]);
+
+        $user = auth()->user();
+        $listingId = 'custom-' . uniqid();
+
+        $save = SavedListing::create([
+            'user_id'          => $user->id,
+            'organization_id'  => $user->organization_id,
+            'listing_id'       => $listingId,
+            'listing_snapshot' => [
+                'title'      => $request->title,
+                'address'    => $request->address,
+                'price'      => $request->price ? (float) $request->price : null,
+                'rooms'      => $request->rooms,
+                'area'       => $request->area,
+                'district'   => $request->district,
+                'owner_name' => $request->owner_name,
+                'phone'      => $request->phone,
+                'url'        => null,
+                'is_custom'  => true,
+            ],
+            'my_price'    => $request->my_price ?: null,
+            'note'        => $request->note ?: null,
+            'link_myhome' => $request->link_myhome ?: null,
+            'link_ss'     => $request->link_ss ?: null,
+            'saved_date'  => now()->toDateString(),
+        ]);
+
+        return response()->json([
+            'listing_id'  => $listingId,
+            'snapshot'    => $save->listing_snapshot,
+            'my_price'    => $save->my_price,
+            'note'        => $save->note,
+            'link_myhome' => $save->link_myhome,
+            'link_ss'     => $save->link_ss,
+        ]);
     }
 
     // All-time saves — the general archive list

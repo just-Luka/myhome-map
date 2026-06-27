@@ -17,7 +17,7 @@
         @if($orgs->isEmpty())
             <div class="empty">No organizations yet.</div>
         @else
-        <table class="tbl">
+        <table>
             <thead>
                 <tr><th>Name</th><th>Members</th><th>Limit</th><th>Team Saves</th><th>Created</th><th></th></tr>
             </thead>

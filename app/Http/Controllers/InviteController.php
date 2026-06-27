@@ -64,6 +64,6 @@ class InviteController extends Controller
             ]);
         }
 
-        return redirect($invite->role === 'ceo' ? '/dashboard' : '/');
+        return redirect($invite->role === 'ceo' ? route('owner.dashboard') : '/');
     }
 }

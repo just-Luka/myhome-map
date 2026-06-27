@@ -3,7 +3,7 @@
 @section('title', 'Team Dashboard')
 
 @section('topbar-actions')
-<form method="POST" action="{{ route('dashboard.invite') }}">
+<form method="POST" action="{{ route('owner.invite') }}">
     @csrf
     <button class="btn btn-primary btn-sm" type="submit">+ <span data-i18n="invite_employee">Invite Employee</span></button>
 </form>
@@ -60,7 +60,7 @@
                             @endforeach
                         </select>
                     </form>
-                    <a href="{{ request('employee') ? route('dashboard.export', ['employee' => request('employee')]) : route('dashboard.export') }}" class="btn btn-green btn-sm">⬇ Export</a>
+                    <a href="{{ request('employee') ? route('owner.export', ['employee' => request('employee')]) : route('owner.export') }}" class="btn btn-green btn-sm">⬇ Export</a>
                 </div>
             </div>
 
@@ -150,7 +150,7 @@
         <div class="card">
             <div class="card-head">
                 <div class="card-title" data-i18n="pending_invites">Pending Invites</div>
-                <form method="POST" action="{{ route('dashboard.invite') }}">
+                <form method="POST" action="{{ route('owner.invite') }}">
                     @csrf
                     <button class="btn btn-ghost btn-sm" type="submit">+ <span data-i18n="new">New</span></button>
                 </form>
@@ -177,14 +177,14 @@
                      style="max-height:60px;max-width:160px;object-fit:contain;border-radius:6px">
             </div>
             @endif
-            <form method="POST" action="{{ route('dashboard.logo') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('owner.logo') }}" enctype="multipart/form-data">
                 @csrf
                 <input type="file" name="logo" accept="image/*" required class="file-input">
                 @error('logo') <p class="field-error">{{ $message }}</p> @enderror
                 <button class="btn btn-primary" style="width:100%" type="submit" data-i18n="upload_logo">Upload Logo</button>
             </form>
             @if($org->logo)
-            <form method="POST" action="{{ route('dashboard.logo.remove') }}" style="margin-top:8px">
+            <form method="POST" action="{{ route('owner.logo.remove') }}" style="margin-top:8px">
                 @csrf @method('DELETE')
                 <button class="btn btn-ghost" style="width:100%;font-size:12px" type="submit" data-i18n="remove_logo">Remove Logo</button>
             </form>

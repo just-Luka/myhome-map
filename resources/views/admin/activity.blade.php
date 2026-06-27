@@ -12,7 +12,7 @@
     @if($saves->isEmpty())
         <div class="empty">No activity yet.</div>
     @else
-    <table class="tbl">
+    <table>
         <thead>
             <tr><th>Employee</th><th>Organization</th><th>Listing</th><th>Owner / Phone</th><th>Price</th><th>Saved</th></tr>
         </thead>

@@ -33,7 +33,7 @@
         @if($recentUsers->isEmpty())
             <div class="empty">No users yet.</div>
         @else
-        <table class="tbl">
+        <table>
             <thead><tr><th>Name</th><th>Role</th><th>Joined</th></tr></thead>
             <tbody>
             @foreach($recentUsers as $u)
@@ -56,7 +56,7 @@
         @if($recentSaves->isEmpty())
             <div class="empty">No saves yet.</div>
         @else
-        <table class="tbl">
+        <table>
             <thead><tr><th>Employee</th><th>Listing</th><th>When</th></tr></thead>
             <tbody>
             @foreach($recentSaves as $s)

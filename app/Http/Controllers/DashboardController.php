@@ -147,7 +147,7 @@ class DashboardController extends Controller
         return response()->stream(function () use ($saves) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Saved By', 'Saved At', 'ID', 'Title', 'Address', 'Owner', 'Phone', 'Original Price', 'My Price', 'Discount %', 'Rent Type', 'Rooms', 'Area', 'District', 'URL']);
+            fputcsv($out, ['Saved By', 'Saved At', 'ID', 'Title', 'Address', 'Owner', 'Phone', 'Original Price', 'My Price', 'Discount %', 'Rent Type', 'Rooms', 'Area', 'District', 'URL', 'Agent Post ID (myhome.ge)', 'Agent Post Link (myhome.ge)', 'Agent Post ID (ss.ge)', 'Agent Post Link (ss.ge)', 'Comment']);
 
             foreach ($saves as $s) {
                 $l        = $s->listing_snapshot;
@@ -171,6 +171,11 @@ class DashboardController extends Controller
                     $l['area'] ?? '',
                     $l['district'] ?? '',
                     $l['url'] ?? '',
+                    $s->myhomePostId() ?? '',
+                    $s->link_myhome ?? '',
+                    $s->ssPostId() ?? '',
+                    $s->link_ss ?? '',
+                    $s->note ?? '',
                 ]);
             }
 

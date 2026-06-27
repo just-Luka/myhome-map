@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 
 class ScrapeMyHome extends Command
 {
-    protected $signature   = 'scrape:myhome {--pages=30} {--delay=400}';
+    protected $signature   = 'scrape:myhome {--pages=30} {--delay=400} {--detail-delay=700} {--debug-listing=}';
     protected $description = 'Scrape recent Tbilisi rent listings from myhome.ge and save with exact coordinates';
 
     private const HEADERS = [
@@ -40,8 +40,9 @@ class ScrapeMyHome extends Command
     {
         ini_set('memory_limit', '512M');
 
-        $maxPages  = (int) $this->option('pages');
-        $delayMs   = (int) $this->option('delay');
+        $maxPages     = (int) $this->option('pages');
+        $delayMs      = (int) $this->option('delay');
+        $detailDelayMs = (int) $this->option('detail-delay');
         $cutoff    = Carbon::now()->subDays(self::DAYS_CUTOFF);
         $geoCache  = [];
 
@@ -80,7 +81,7 @@ class ScrapeMyHome extends Command
                     $poster = ($l['user_type']['type'] ?? 'physical') === 'physical' ? 'owner' : 'agent';
                     if ($poster !== 'owner') continue;
 
-                    $this->processListing($l, $updatedAt, $geoCache, $delayMs);
+                    $this->processListing($l, $updatedAt, $geoCache, $detailDelayMs);
                 }
 
                 if ($allOld && $rentCount > 0) {
@@ -96,12 +97,13 @@ class ScrapeMyHome extends Command
         $this->info("Done. Saved: {$this->saved}  Updated: {$this->updated}  Skipped (no coords): {$this->skipped}");
     }
 
-    private function processListing(array $l, Carbon $updatedAt, array &$geoCache, int $delayMs): void
+    private function processListing(array $l, Carbon $updatedAt, array &$geoCache, int $detailDelayMs): void
     {
         $id     = (string) $l['id'];
         $slug   = $l['href_lang']['en'] ?? ($l['dynamic_slug'] ?? '');
         $poster = ($l['user_type']['type'] ?? 'physical') === 'physical' ? 'owner' : 'agent';
 
+        usleep($detailDelayMs * 1000);
         [$lat, $lng, $geocoded, $ownerName, $phone] = $this->resolveDetail($l, $slug, $geoCache);
 
         if (! $lat || ! $lng) {
@@ -179,7 +181,8 @@ class ScrapeMyHome extends Command
     // Returns ['lat', 'lng', 'owner_name', 'phone'] from the detail page __NEXT_DATA__
     private function fetchDetailData(string $id, string $slug): array
     {
-        $null = ['lat' => null, 'lng' => null, 'owner_name' => null, 'phone' => null];
+        $null  = ['lat' => null, 'lng' => null, 'owner_name' => null, 'phone' => null];
+        $debug = $this->option('debug-listing') === $id;
 
         $url = "https://www.myhome.ge/en/pr/{$id}" . ($slug ? "/{$slug}" : '');
         try {
@@ -194,6 +197,7 @@ class ScrapeMyHome extends Command
         unset($response);
 
         if (! preg_match('/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s', $body, $m)) {
+            if ($debug) $this->warn("[$id] No __NEXT_DATA__ found.");
             return $null;
         }
 
@@ -201,35 +205,53 @@ class ScrapeMyHome extends Command
         $data = json_decode($m[1], true);
         unset($m);
 
-        foreach ($data['props']['pageProps']['dehydratedState']['queries'] ?? [] as $q) {
-            if (! in_array('details', $q['queryKey'] ?? [])) continue;
-
-            $stmt = $q['state']['data']['data']['statement'] ?? null;
-            unset($data);
-
-            if (! $stmt) return $null;
-
-            $lat = $lng = null;
-            if (! empty($stmt['lat']) && ! empty($stmt['lng'])) {
-                $lat = (float) $stmt['lng']; // myhome.ge swaps lat/lng
-                $lng = (float) $stmt['lat'];
-            }
-
-            // Owner name — try multiple known locations in the payload
-            $user      = $stmt['user'] ?? $stmt['author'] ?? [];
-            $firstName = $user['first_name'] ?? $user['name'] ?? null;
-            $lastName  = $user['last_name'] ?? null;
-            $ownerName = trim(implode(' ', array_filter([$firstName, $lastName]))) ?: null;
-
-            // Phone — myhome.ge stores an array of numbers
-            $phones = $user['mobile_numbers'] ?? $user['phones'] ?? $user['mobile'] ?? [];
-            if (is_string($phones)) $phones = [$phones];
-            $phone = ! empty($phones) ? implode(', ', array_filter((array) $phones)) : null;
-
-            return ['lat' => $lat, 'lng' => $lng, 'owner_name' => $ownerName, 'phone' => $phone];
+        if ($debug) {
+            $keys = array_map(fn($q) => json_encode($q['queryKey'] ?? []), $data['props']['pageProps']['dehydratedState']['queries'] ?? []);
+            $this->line("[$id] Query keys: " . implode(' | ', $keys));
         }
 
-        return $null;
+        // Try both 'details' and any query key containing the listing id
+        $stmt = null;
+        foreach ($data['props']['pageProps']['dehydratedState']['queries'] ?? [] as $q) {
+            $qk = $q['queryKey'] ?? [];
+            if (in_array('details', $qk) || in_array((int)$id, $qk) || in_array($id, $qk)) {
+                $stmt = $q['state']['data']['data']['statement']
+                     ?? $q['state']['data']['data']
+                     ?? $q['state']['data']['statement']
+                     ?? null;
+                if ($debug) $this->line("[$id] Matched query key: " . json_encode($qk));
+                break;
+            }
+        }
+
+        unset($data);
+
+        if (! $stmt) {
+            if ($debug) $this->warn("[$id] No matching query / statement found.");
+            return $null;
+        }
+
+        if ($debug) $this->line("[$id] Statement keys: " . implode(', ', array_keys($stmt)));
+
+        $lat = $lng = null;
+        if (! empty($stmt['lat']) && ! empty($stmt['lng'])) {
+            $lat = (float) $stmt['lng']; // myhome.ge swaps lat/lng
+            $lng = (float) $stmt['lat'];
+        }
+
+        // Owner name — stored directly on statement
+        $ownerName = $stmt['owner_name'] ?? null;
+
+        // Phones — stored directly on statement
+        $phones = array_filter([
+            $stmt['user_phone_number'] ?? null,
+            $stmt['additional_phone_number'] ?? null,
+        ]);
+        $phone = ! empty($phones) ? implode(', ', $phones) : null;
+
+        if ($debug) $this->line("[$id] owner=$ownerName phone=$phone lat=$lat lng=$lng");
+
+        return ['lat' => $lat, 'lng' => $lng, 'owner_name' => $ownerName, 'phone' => $phone];
     }
 
     private function geocode(?string $address, ?string $urban, ?string $district): array
