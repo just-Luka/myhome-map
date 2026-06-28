@@ -79,18 +79,6 @@ Route::middleware(\App\Http\Middleware\SuperAdmin::class)->prefix('admin')->name
     Route::get('/activity/export',              [SuperAdminController::class, 'exportActivity'])->name('activity.export');
 });
 
-// ── Dev helpers (remove before production) ───────────────────────────────────
-Route::get('/dev/splash', function () {
-    $user = auth()->user();
-    $org  = $user->organization;
-    session()->flash('welcome_splash', [
-        'name' => $user->name,
-        'org'  => $org?->name ?? 'Demo Agency',
-        'logo' => $org?->logo,
-    ]);
-    return redirect('/');
-})->middleware('auth');
-
 // ── Scrape (super admin only) ─────────────────────────────────────────────────
 Route::middleware(\App\Http\Middleware\SuperAdmin::class)->group(function () {
     Route::get('/scrape',     [ScrapeController::class, 'page'])->name('scrape.page');
