@@ -607,25 +607,6 @@
         }
         #auth-box a:hover { background: #3b5be0; }
 
-        /* ── Pin legend ── */
-        #pin-legend {
-            position: absolute; bottom: 28px; left: 12px; z-index: 999;
-            background: rgba(17,19,32,0.85); backdrop-filter: blur(6px);
-            border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
-            padding: 8px 12px; display: flex; flex-direction: column; gap: 5px;
-        }
-        .pin-legend-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #94a3b8; }
-        [data-theme="light"] #pin-legend { background: rgba(255,255,255,0.92); border-color: #dde3eb; }
-        [data-theme="light"] .pin-legend-item { color: #4a5568; }
-
-        /* ── Map pins ── */
-        .map-pin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 1px 4px rgba(0,0,0,0.35); }
-        .map-pin.age-0 { background: #22c55e; }   /* today */
-        .map-pin.age-1 { background: #3b82f6; }   /* 1 day ago */
-        .map-pin.age-2 { background: #f59e0b; }   /* 2 days ago */
-        .map-pin.age-3 { background: #f97316; }   /* 3 days ago */
-        .map-pin.age-old { background: #94a3b8; } /* 4+ days ago */
-
         /* ── Popup ── */
         .leaflet-popup-content-wrapper { border-radius: 14px; padding: 0; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
         .leaflet-popup-content { margin: 0; width: 290px !important; }
@@ -938,13 +919,6 @@ window.__splashSteps = [
 </div>
 
 <div id="map"></div>
-<div id="pin-legend">
-    <div class="pin-legend-item"><span class="map-pin age-0"></span> Today</div>
-    <div class="pin-legend-item"><span class="map-pin age-1"></span> 1d ago</div>
-    <div class="pin-legend-item"><span class="map-pin age-2"></span> 2d ago</div>
-    <div class="pin-legend-item"><span class="map-pin age-3"></span> 3d ago</div>
-    <div class="pin-legend-item"><span class="map-pin age-old"></span> Older</div>
-</div>
 
 <!-- Saved panel -->
 <button id="panel-tab" onclick="togglePanel()" title="Toggle panel">›</button>
@@ -1407,12 +1381,7 @@ function addMarker(l) {
     const save = mySaves.get(String(l.id));
     if (save && !save.listing) { save.listing = l; }
 
-    const days    = l.days_ago ?? 99;
-    const ageClass = days === 0 ? 'age-0' : days === 1 ? 'age-1' : days === 2 ? 'age-2' : days === 3 ? 'age-3' : 'age-old';
-    const pinIcon = L.divIcon({ className: '', html: `<div class="map-pin ${ageClass}"></div>`, iconSize: [12, 12], iconAnchor: [6, 6] });
-
     const marker = L.marker([l.lat, l.lng], {
-        icon:    pinIcon,
         opacity: (currentView === 'all' && viewedListings.has(String(l.id))) ? 0.35 : 1,
     });
     const price  = l.price ? `$${Number(l.price).toLocaleString()}` : 'N/A';
