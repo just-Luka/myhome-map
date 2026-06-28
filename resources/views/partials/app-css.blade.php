@@ -134,12 +134,16 @@ tr:hover td { background: rgba(0,0,0,0.02); }
    BADGES
    ════════════════════════════════════════════════════ */
 .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-.badge-super_admin, .badge-super { background: #2d1a3a; color: #c084fc; }
-.badge-ceo                       { background: #2a1e3a; color: #c084fc; }
-.badge-employee                  { background: #1e2a3a; color: var(--info); }
+.badge-super_admin, .badge-super { background: #ede9fe; color: #7c3aed; }
+.badge-ceo                       { background: #ede9fe; color: #7c3aed; }
+.badge-employee                  { background: #dbeafe; color: #1d4ed8; }
 .badge-free                      { background: var(--card-border); color: var(--dim); }
 .badge-pro                       { background: var(--primary-muted); color: var(--primary); }
 .badge-org                       { background: rgba(233,69,96,0.12); color: var(--brand); }
+
+body:not(.theme-light) .badge-super_admin, body:not(.theme-light) .badge-super { background: #2d1a3a; color: #c084fc; }
+body:not(.theme-light) .badge-ceo      { background: #2a1e3a; color: #c084fc; }
+body:not(.theme-light) .badge-employee { background: #1e2a3a; color: var(--info); }
 
 /* ════════════════════════════════════════════════════
    ALERTS
