@@ -81,6 +81,7 @@ class StreamController extends Controller
             'owner_name'  => $listing->owner_name,
             'phone'       => $listing->phone,
             'updated_at'  => $listing->listed_at?->diffForHumans(),
+            'days_ago'    => $listing->listed_at ? (int) $listing->listed_at->diffInDays(now()) : 99,
             'url'         => $listing->url,
         ];
     }
