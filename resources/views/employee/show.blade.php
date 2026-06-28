@@ -27,7 +27,7 @@
 
 <div class="stats">
     <div class="stat">
-        <div class="val">{{ $saves->count() }}</div>
+        <div class="val">{{ $totalCount }}</div>
         <div class="lbl">Total Saves</div>
     </div>
     <div class="stat">
@@ -142,6 +142,8 @@
         </tbody>
     </table>
     @endif
+
+    {{ $saves->links('vendor.pagination.dashboard') }}
 </div>
 
 @endsection

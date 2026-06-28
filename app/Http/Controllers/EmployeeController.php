@@ -69,13 +69,16 @@ class EmployeeController extends Controller
         $saveLimit  = $org->save_limit ?? 20;
         $today      = now()->toDateString();
         $members    = $org->users()->get();
-        $saves      = SavedListing::where('user_id', $user->id)->latest()->get();
-        $todayCount = $saves->where('saved_date', $today)->count();
-        $weekCount  = $saves->filter(fn($s) => $s->created_at->isCurrentWeek())->count();
+        $todayCount = SavedListing::where('user_id', $user->id)->where('saved_date', $today)->count();
+        $weekCount  = SavedListing::where('user_id', $user->id)
+            ->whereBetween('created_at', [now()->startOfWeek(), now()])
+            ->count();
+        $saves      = SavedListing::where('user_id', $user->id)->latest()->paginate(20);
+        $totalCount = $saves->total();
         $userLimit  = $user->save_limit ?? $saveLimit;
 
         return view('employee.show', compact(
-            'org', 'members', 'user', 'saves', 'todayCount', 'weekCount', 'saveLimit', 'userLimit'
+            'org', 'members', 'user', 'saves', 'totalCount', 'todayCount', 'weekCount', 'saveLimit', 'userLimit'
         ));
     }
 

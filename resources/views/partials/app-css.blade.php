@@ -243,11 +243,13 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--primary); 
 .grid-2   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 .grid-3-1 { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
 
-.pagination { display: flex; gap: 6px; margin-top: 20px; justify-content: flex-end; }
-.pagination a, .pagination span { padding: 6px 12px; border-radius: 6px; font-size: 13px; text-decoration: none; }
+.pagination { display: flex; gap: 4px; margin-top: 20px; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
+.pagination a, .pagination .pg-active, .pagination .pg-disabled, .pagination .pg-dots { padding: 6px 11px; border-radius: 6px; font-size: 13px; text-decoration: none; line-height: 1; }
 .pagination a { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--subtle); }
 .pagination a:hover { border-color: var(--primary); color: var(--primary); }
-.pagination span { background: var(--primary); color: #fff; }
+.pagination .pg-active { background: var(--primary); color: #fff; border: 1px solid var(--primary); font-weight: 600; }
+.pagination .pg-disabled { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--muted); opacity: .4; }
+.pagination .pg-dots { color: var(--muted); padding: 6px 4px; }
 
 /* ════════════════════════════════════════════════════
    LANG SWITCHER
