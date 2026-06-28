@@ -108,6 +108,42 @@
     @endif
 </div>
 
+@if($formerEmployees->isNotEmpty())
+<div class="card" style="margin-top:24px">
+    <div class="card-title" style="margin-bottom:16px">Former Employees</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Saved Listings</th>
+                <th>Last Active</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach($formerEmployees as $e)
+        <tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div class="employee-avatar" style="opacity:.6">{{ strtoupper(substr($e['user']->name, 0, 1)) }}</div>
+                    <div>
+                        <div class="employee-name" style="color:var(--muted)">{{ $e['user']->name }}</div>
+                        <div class="employee-meta">{{ $e['user']->email }}</div>
+                    </div>
+                </div>
+            </td>
+            <td style="font-weight:600;color:var(--subtle)">{{ $e['total'] }}</td>
+            <td class="listing-when">{{ $e['last_save'] ? $e['last_save']->diffForHumans() : '—' }}</td>
+            <td>
+                <a href="{{ route('owner.employees.export-former', $e['user']->id) }}" class="btn btn-ghost btn-sm">⬇ Export CSV</a>
+            </td>
+        </tr>
+        @endforeach
+        </tbody>
+    </table>
+</div>
+@endif
+
 @endsection
 
 @section('scripts')

@@ -38,7 +38,27 @@ class EmployeeController extends Controller
                 ];
             });
 
-        return view('employee.index', compact('org', 'members', 'employees', 'saveLimit'));
+        // Users no longer in the org but who have listings belonging to it
+        $formerIds = SavedListing::where('organization_id', $org->id)
+            ->pluck('user_id')
+            ->unique()
+            ->diff($members->pluck('id'));
+
+        $formerEmployees = User::whereIn('id', $formerIds)
+            ->get()
+            ->map(function ($u) use ($org) {
+                $total = SavedListing::where('user_id', $u->id)
+                    ->where('organization_id', $org->id)
+                    ->count();
+                $last  = SavedListing::where('user_id', $u->id)
+                    ->where('organization_id', $org->id)
+                    ->latest()
+                    ->value('created_at');
+                return ['user' => $u, 'total' => $total, 'last_save' => $last];
+            })
+            ->filter(fn($e) => $e['total'] > 0);
+
+        return view('employee.index', compact('org', 'members', 'employees', 'saveLimit', 'formerEmployees'));
     }
 
     public function show(User $user)
@@ -89,6 +109,56 @@ class EmployeeController extends Controller
 
         $saves    = SavedListing::where('user_id', $user->id)->latest()->get();
         $filename = 'listings-' . str($user->name)->slug() . '-' . now()->format('Y-m-d') . '.csv';
+
+        return response()->stream(function () use ($saves) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['Saved At', 'ID', 'Title', 'Address', 'Owner', 'Phone', 'Original Price', 'My Price', 'Discount %', 'Rooms', 'Area', 'District', 'URL', 'Agent Post ID (myhome.ge)', 'Agent Post Link (myhome.ge)', 'Agent Post ID (ss.ge)', 'Agent Post Link (ss.ge)', 'Comment']);
+
+            foreach ($saves as $s) {
+                $l    = $s->listing_snapshot;
+                $orig = (float) ($l['price'] ?? 0);
+                $mine = (float) ($s->my_price ?? 0);
+                $disc = ($mine && $orig) ? round((($orig - $mine) / $orig) * 100, 1) . '%' : '';
+
+                fputcsv($out, [
+                    $s->created_at->format('Y-m-d H:i'),
+                    $s->listing_id,
+                    $l['title'] ?? '',
+                    $l['address'] ?? '',
+                    $l['owner_name'] ?? '',
+                    $l['phone'] ?? '',
+                    $orig ?: '',
+                    $mine ?: '',
+                    $disc,
+                    $l['rooms'] ?? '',
+                    $l['area'] ?? '',
+                    $l['district'] ?? '',
+                    $l['url'] ?? '',
+                    $s->myhomePostId() ?? '',
+                    $s->link_myhome ?? '',
+                    $s->ssPostId() ?? '',
+                    $s->link_ss ?? '',
+                    $s->note ?? '',
+                ]);
+            }
+
+            fclose($out);
+        }, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control'       => 'no-store',
+        ]);
+    }
+
+    public function exportFormer(User $user)
+    {
+        $org = auth()->user()->organization;
+
+        $saves    = SavedListing::where('user_id', $user->id)->where('organization_id', $org->id)->latest()->get();
+        abort_if($saves->isEmpty(), 403);
+
+        $filename = 'listings-former-' . str($user->name)->slug() . '-' . now()->format('Y-m-d') . '.csv';
 
         return response()->stream(function () use ($saves) {
             $out = fopen('php://output', 'w');

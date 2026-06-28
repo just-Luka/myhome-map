@@ -80,7 +80,7 @@ Object.assign(translations.en, {
 Object.assign(translations.ka, {
     settings_team:       'გუნდი',
     show_team_saves:     'გუნდის შენახვების ჩვენება',
-    show_team_saves_hint:'თანამშრომლები ხედავენ გუნდის ნიშნებს რუქაზე',
+    show_team_saves_hint:'თანამშრომლები ხედავენ გუნდის ნიშნებს რუკაზე',
     show_team_prices:    'თანამშრომლების ფასების ჩვენება',
     show_team_prices_hint:'შენახული ფასი ჩანს პროფილის სურათზე გადაჭერისას',
     save_limit_label:    'დღიური ლიმიტი აგენტზე',

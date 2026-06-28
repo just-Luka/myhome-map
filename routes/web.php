@@ -46,7 +46,8 @@ Route::middleware(\App\Http\Middleware\CeoAccess::class)->prefix('owner')->name(
     Route::get('/employees/{user}',             [EmployeeController::class, 'show'])->name('employees.show');
     Route::delete('/employees/{user}',          [EmployeeController::class, 'destroy'])->name('employees.destroy');
     Route::patch('/employees/{user}/limit',     [EmployeeController::class, 'updateLimit'])->name('employees.limit');
-    Route::get('/employees/{user}/export',      [EmployeeController::class, 'export'])->name('employees.export');
+    Route::get('/employees/{user}/export',        [EmployeeController::class, 'export'])->name('employees.export');
+    Route::get('/employees/{user}/export-former', [EmployeeController::class, 'exportFormer'])->name('employees.export-former');
     Route::delete('/saves/{save}',              [EmployeeController::class, 'destroySave'])->name('saves.destroy');
     Route::get('/settings',   [DashboardController::class, 'settings'])->name('settings');
     Route::patch('/settings', [DashboardController::class, 'updateSettings'])->name('settings.update');

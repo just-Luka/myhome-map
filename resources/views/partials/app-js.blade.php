@@ -34,7 +34,7 @@ const translations = {
         employees:  'თანამშრომლები',
         settings:   'პარამეტრები',
         export_all: 'ექსპორტი',
-        live_map:   'რუქა',
+        live_map:   'რუკა',
     },
 };
 
