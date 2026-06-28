@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'scraper' => [
+        'secret' => env('SCRAPER_SECRET'),
+    ],
+
 ];

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ScraperIngestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InviteController;
@@ -84,4 +85,10 @@ Route::middleware(\App\Http\Middleware\SuperAdmin::class)->prefix('admin')->name
 Route::middleware(\App\Http\Middleware\SuperAdmin::class)->group(function () {
     Route::get('/scrape',     [ScrapeController::class, 'page'])->name('scrape.page');
     Route::get('/scrape/run', [ScrapeController::class, 'run'])->name('scrape.run');
+});
+
+// ── Scraper ingest API ────────────────────────────────────────────────────────
+Route::middleware(\App\Http\Middleware\ScraperAuth::class)->group(function () {
+    Route::get('/api/scraper/checkpoint', [ScraperIngestController::class, 'checkpoint'])->name('scraper.checkpoint');
+    Route::post('/api/scraper/ingest',    [ScraperIngestController::class, 'ingest'])->name('scraper.ingest');
 });
