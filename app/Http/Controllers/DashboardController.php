@@ -21,7 +21,7 @@ class DashboardController extends Controller
             $savesQuery->where('user_id', $request->employee);
         }
 
-        $saves   = $savesQuery->latest()->get();
+        $saves   = $savesQuery->latest()->paginate(20)->withQueryString();
         $members = $org->users()->withCount('savedListings')->orderBy('name')->get();
 
         // Stats

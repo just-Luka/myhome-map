@@ -53,8 +53,8 @@
 
         <div class="field-row">
             <div class="label">
-                <span data-i18n="save_limit_label">Daily save limit per agent</span>
-                <small data-i18n="save_limit_hint">Max listings an agent can save per day</small>
+                <span data-i18n="save_limit_label">Daily target per agent</span>
+                <small data-i18n="save_limit_hint">Minimum listings an agent should save per day</small>
             </div>
             <input type="number" name="save_limit" value="{{ $org->save_limit ?? 20 }}" min="1" max="200">
         </div>
@@ -73,8 +73,8 @@ Object.assign(translations.en, {
     show_team_saves_hint:'Employees see teammates\' pins on the map',
     show_team_prices:    'Show teammate prices on hover',
     show_team_prices_hint:'Price each teammate saved is visible on avatar hover',
-    save_limit_label:    'Daily save limit per agent',
-    save_limit_hint:     'Max listings an agent can save per day',
+    save_limit_label:    'Daily target per agent',
+    save_limit_hint:     'Minimum listings an agent should save per day',
     save_changes:        'Save changes',
 });
 Object.assign(translations.ka, {
@@ -83,8 +83,8 @@ Object.assign(translations.ka, {
     show_team_saves_hint:'თანამშრომლები ხედავენ გუნდის ნიშნებს რუკაზე',
     show_team_prices:    'თანამშრომლების ფასების ჩვენება',
     show_team_prices_hint:'შენახული ფასი ჩანს პროფილის სურათზე გადაჭერისას',
-    save_limit_label:    'დღიური ლიმიტი აგენტზე',
-    save_limit_hint:     'მაქსიმუმ განცხადებები, რომლის შენახვაც შეუძლია აგენტს დღეში',
+    save_limit_label:    'დღიური მიზანი აგენტზე',
+    save_limit_hint:     'მინიმუმ განცხადებები, რომელიც აგენტმა უნდა შეინახოს დღეში',
     save_changes:        'ცვლილებების შენახვა',
 });
 </script>

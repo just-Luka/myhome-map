@@ -60,7 +60,6 @@
                             @endforeach
                         </select>
                     </form>
-                    <a href="{{ request('employee') ? route('owner.export', ['employee' => request('employee')]) : route('owner.export') }}" class="btn btn-green btn-sm">⬇ Export</a>
                 </div>
             </div>
 
@@ -116,6 +115,8 @@
                 </tbody>
             </table>
             @endif
+
+            {{ $saves->links('vendor.pagination.dashboard') }}
         </div>
     </div>
 

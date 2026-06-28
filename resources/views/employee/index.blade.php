@@ -62,7 +62,7 @@
                 <th>Employee</th>
                 <th>Total</th>
                 <th>This Week</th>
-                <th>Today / Limit</th>
+                <th>Today / Target</th>
                 <th>Last Active</th>
                 <th></th>
             </tr>

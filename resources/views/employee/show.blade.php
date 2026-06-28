@@ -38,11 +38,11 @@
         @php $pct = $userLimit > 0 ? min(100, round($todayCount / $userLimit * 100)) : 0; @endphp
         <div class="val">{{ $todayCount }}</div>
         <div class="lbl">Today</div>
-        <div class="sub">{{ $pct }}% of limit</div>
+        <div class="sub">{{ $pct }}% of target</div>
     </div>
     <div class="stat">
         <div class="val">{{ $userLimit }}</div>
-        <div class="lbl">Daily Limit</div>
+        <div class="lbl">Daily Target</div>
         <div class="sub {{ $userLimit !== $saveLimit ? 'custom-limit-badge' : '' }}">
             {{ $userLimit !== $saveLimit ? 'custom' : 'org default' }}
         </div>
@@ -60,7 +60,7 @@
         </div>
         <form method="POST" action="{{ route('owner.employees.limit', $user->id) }}" class="limit-form">
             @csrf @method('PATCH')
-            <span class="limit-label">Daily limit</span>
+            <span class="limit-label">Daily target</span>
             <input type="number" name="save_limit" class="limit-input"
                    value="{{ $user->save_limit ?? '' }}"
                    placeholder="{{ $saveLimit }}"
