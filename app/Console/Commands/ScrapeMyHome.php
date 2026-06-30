@@ -157,7 +157,7 @@ class ScrapeMyHome extends Command
         }
 
         if (! empty($l['lat']) && ! empty($l['lng'])) {
-            return [(float) $l['lng'], (float) $l['lat'], false, $detail['owner_name'], $detail['phone']];
+            return [(float) $l['lat'], (float) $l['lng'], false, $detail['owner_name'], $detail['phone']];
         }
 
         // Nominatim — neighbourhood-level, cached per area
@@ -235,8 +235,8 @@ class ScrapeMyHome extends Command
 
         $lat = $lng = null;
         if (! empty($stmt['lat']) && ! empty($stmt['lng'])) {
-            $lat = (float) $stmt['lng']; // myhome.ge swaps lat/lng
-            $lng = (float) $stmt['lat'];
+            $lat = (float) $stmt['lat'];
+            $lng = (float) $stmt['lng'];
         }
 
         // Owner name — stored directly on statement
